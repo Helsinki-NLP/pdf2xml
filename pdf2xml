@@ -16,7 +16,7 @@ pdf2xml - extract texts from PDF files and put them in XML
 
 =head1 DESCRIPTION
 
-pdf2xml calls Apache Tika to extract text from PDf files and to convert them to XML (actually XHTML). It also uses pdf2text to find words that should not be split into character sequences (which often happens with pdf-text extractiont tools) and it also tries to put hyphenated words together again (again using different modes of pdftotext)
+pdf2xml calls Apache Tika to extract text from PDf files and to convert them to XML (actually XHTML). It also uses pdftotext to find words that should not be split into character sequences (which often happens with pdf-text extractiont tools) and it also tries to put hyphenated words together again (again using different modes of pdftotext)
 
 =head1 SEE ALSO
 

@@ -1,0 +1,18 @@
+
+pdf2xml - convert PDF files to XML
+----------------------------------
+
+This script heavily relies on Apache Tika for the conversion.
+
+What does it do more than Apache Tika?
+
+- it tries to put words together that have been separated into character sequences
+- it tries to merge hyphenated words
+
+How?
+
+- use pdftotext to generate text files and combine results
+  --> standard mode: puts hyphenated words together in many cases
+  --> raw mode: is better in keeping words together (instead of producing character sequences)
+- use Apache Tika to produce XHTML and use information from pdftotext to merge characters
+

@@ -156,35 +156,37 @@ sub xml_end{
 
 
 
-
-
-
-
 sub find_words{
     my @words = ();
-    my @remaining = split(/\s+/,$_[0]);
-    while (@remaining){
-	my @tokens = @remaining;
-	@remaining = ();
-	my $str = join('',@tokens);
+
+    if ($_[0]=~/LES CRITERES DE CHOIX/){
+	print '';
+    }
+
+    my @tokens1 = split(/\s+/,$_[0]);
+    my @tokens2 = ();
+
+    my $remaining = \@tokens1;
+    my $current   = \@tokens2;
+
+    while (@{$remaining}){
+	($current,$remaining) = ($remaining,$current);
+	@{$remaining} = ();
+	my $str = join('',@{$current});
 	until (exists $voc{$str}){
-	    last unless (@tokens);
-	    unshift(@remaining,pop(@tokens));
-	    $str = join('',@tokens);
+	    last unless (@{$current});
+	    unshift( @{$remaining}, pop(@{$current}) );
+	    $str = join('',@{$current});
 	}
-	if ($#tokens>0){
+	if ($#{$current}>0){
 	    $voc{$str}++;
-	    print STDERR join(' ',@tokens)," --> $str\n" if ($opt_v);
+	    print STDERR join(' ',@{$current})," --> $str\n" if ($opt_v);
 	}
-	unless ($str){
-	    push(@words,@remaining);
-	    @remaining=();
-	}
-	push(@words,$str);
+	if ($str){ push(@words,$str); }
+	else{      push(@words,shift @{$remaining}); }
     }
     return @words;
 }
-
 
 sub read_vocabulary{
     my ($voc,$file) = @_;
@@ -202,17 +204,6 @@ sub read_vocabulary{
 	    $$voc{$_}++;
 	}
     }
-}
-
-sub help_message
-{
-    pod2usage(
-        -exitval => 'NOEXIT',
-        -message => 'letsmt_rest - a simple frontend for using the LetsMT REST server',
-        -verbose => 2,
-    );
-    print STDERR $_[0] if @_;
-    exit 1;
 }
 
 __END__

@@ -1,6 +1,8 @@
 #!/usr/bin/env perl
 #-*-perl-*-
 
+=encoding utf-8
+
 =head1 NAME
 
 pdf2xml - extract texts from PDF files and put them in XML
@@ -11,12 +13,39 @@ pdf2xml - extract texts from PDF files and put them in XML
 
 =head1 OPTIONS
 
- -l lexicon ..... a list of words or a text in the target language
+ -h ............. skip de-hypenation (keep hyphenated words)
+ -l lexicon ..... provide a list of words or a text in the target language
+ -m ............. skip merging character sequences (not recommended)
+ -r ............. skip 'pdftotext -raw' (not recommended)
+ -x ............. skip standard 'pdftotext'
  -v ............. verbose output
 
 =head1 DESCRIPTION
 
-pdf2xml calls Apache Tika to extract text from PDf files and to convert them to XML (actually XHTML). It also uses pdftotext to find words that should not be split into character sequences (which often happens with pdf-text extractiont tools) and it also tries to put hyphenated words together again (again using different modes of pdftotext)
+pdf2xml calls pdftotext and Apache Tika to extract text from PDf files and to convert them to XML (actually XHTML). It also uses some heuristics to find words that should not be split into character sequences (which often happens with pdf-text extraction tools) and it also tries to put hyphenated words together.
+
+Example: raw is without cleanup heuristics
+
+  raw:    <p>PRESENTATION ET R A P P E L DES PRINCIPAUX RESULTATS 9</p>
+  clean:  <p>PRESENTATION ET RAPPEL DES PRINCIPAUX RESULTATS 9</p>
+
+  raw:    <p>2. Les c r i t è r e s de choix : la c o n s o m m a t i o n 
+             de c o m b u s - t ib les et l e u r moda l i t é 
+             d ' u t i l i s a t i on d 'une p a r t , 
+             la concen t r a t ion d ' a u t r e p a r t 16</p>
+
+  clean:  <p>2. Les critères de choix : la consommation 
+             de combustibles et leur modalité 
+             d'utilisation d'une part, 
+             la concentration d'autre part 16</p>
+
+=head1 TODO
+
+This is quite slow and loading Apache Tika for each conversion is not very efficient. Using the server mode of Apache Tika would be a solution.
+
+Character merging heuristics are very simple. Using the longest string forming a valid word from the vocabulary may lead to many incorrect words in context for some languages. Also, the implementation of the merging procedure is probably not the most efficient one.
+
+De-hyphenation heuristics could also be improved. The problem is to keep it as language-independent as possible.
 
 =head1 SEE ALSO
 
@@ -41,9 +70,9 @@ use IPC::Open2;
 use XML::Parser;
 use XML::Writer;
 
-use vars qw($opt_l $opt_v);
+use vars qw($opt_h $opt_l $opt_m $opt_r $opt_x $opt_v);
 use Getopt::Std;
-getopts('l:v');
+getopts('hl:mrxv');
 
 # home of shared data (where Apache Tika should be)
 
@@ -77,46 +106,52 @@ if ($opt_l){
 }
 
 
+# read output of 'pdftotext -raw'
 
-my $pid = open2(\*OUT, undef, 'pdftotext','-raw',$pdf_file,'-');
-binmode(OUT,":encoding(UTF-8)");
+unless ($opt_r){
+    my $pid = open2(\*OUT, undef, 'pdftotext','-raw',$pdf_file,'-');
+    binmode(OUT,":encoding(UTF-8)");
 
-my $hyphenated=undef;
-
-while(<OUT>){
-    chomp;
-    my @tok=split(/\s+/);
-    if ($hyphenated){
-	$voc{$hyphenated.$tok[0]}++;
-	print STDERR "possibly hyphenated: $hyphenated -- $tok[0]\n" if ($opt_v);
-	$hyphenated=undef;
-    }
-    if (@tok){
-	if ($tok[-1]=~/^(.*)-/){
-	    $hyphenated=$1;
+    my $hyphenated=undef;
+    while(<OUT>){
+	chomp;
+	my @tok=split(/\s+/);
+	if ($hyphenated){
+	    $voc{$hyphenated.$tok[0]}++;
+	    print STDERR "possibly hyphenated: $hyphenated -- $tok[0]\n" if ($opt_v);
+	    $hyphenated=undef;
+	}
+	if (@tok){
+	    if ($tok[-1]=~/^(.*)-/){
+		$hyphenated=$1;
+	    }
+	}
+	foreach (@tok){
+	    $voc{$_}++;
 	}
     }
-    foreach (@tok){
-	$voc{$_}++;
-    }
+    close(OUT);
+    waitpid( $pid, 0 );
 }
-close(OUT);
-waitpid( $pid, 0 );
 
 
-my $pid = open2(\*OUT, undef, 'pdftotext',$pdf_file,'-');
-binmode(OUT,":encoding(UTF-8)");
-# waitpid( $pid, 0 );
+# read output of standard 'pdftotext'
 
-while(<OUT>){
-    chomp;
-    my @words = find_words($_);
-    foreach (@words){
-	$voc{$_}++;
+unless ($opt_x){
+    my $pid = open2(\*OUT, undef, 'pdftotext',$pdf_file,'-');
+    binmode(OUT,":encoding(UTF-8)");
+
+    while(<OUT>){
+	chomp;
+	my @words = find_words($_);
+	foreach (@words){
+	    $voc{$_}++;
+	}
     }
+    close(OUT);
+    waitpid( $pid, 0 );
 }
-close(OUT);
-waitpid( $pid, 0 );
+
 
 
 binmode(STDOUT,":encoding(UTF-8)");
@@ -136,13 +171,48 @@ my $pid = open2(\*OUT, undef, 'java','-jar',$TIKA,'-x',$pdf_file);
 $parser->parse(*OUT);
 
 
-
 sub xml_start{ 
     shift;
     $writer->startTag(shift, @_);
 }
 
 sub xml_end{
+    if ($_[0]->{STRING}){
+
+	my @words=();
+	my @lines = split(/\n+/,$_[0]->{STRING});
+
+	while (@lines){
+	    my $OriginalStr     = shift(@lines);
+	    my $DehyphenatedStr = undef;
+
+	    unless ($opt_h){
+		while ($OriginalStr=~/\-\s*$/ && @lines){
+		    $DehyphenatedStr = $OriginalStr unless ($DehyphenatedStr);
+		    $DehyphenatedStr=~s/\-\s*$//;
+		    my $nextLine = shift(@lines);
+		    $OriginalStr     .= "\n".$nextLine;
+		    $DehyphenatedStr .= "\n".$nextLine;
+		}
+	    }
+
+	    my @tok = find_words( $OriginalStr );
+	    if ($DehyphenatedStr){
+		my @tok2 = find_words( $DehyphenatedStr );
+		@tok = @tok2 if ($#tok2 < $#tok);
+	    }
+	    push(@words,@tok);
+	}
+
+	if (@words){
+	    $writer->characters( join(' ',@words) );
+	    $_[0]->{STRING} = '';
+	}
+    }
+    $writer->endTag($_[1]);
+}
+
+sub xml_end_simple{
     if ($_[0]->{STRING}){
 	my @words = find_words( $_[0]->{STRING} );
 	if (@words){
@@ -159,13 +229,10 @@ sub xml_end{
 sub find_words{
     my @words = ();
 
-    if ($_[0]=~/LES CRITERES DE CHOIX/){
-	print '';
-    }
-
     my @tokens1 = split(/\s+/,$_[0]);
-    my @tokens2 = ();
+    return @tokens1 if ($opt_m);          # skip merging ...
 
+    my @tokens2   = ();
     my $remaining = \@tokens1;
     my $current   = \@tokens2;
 

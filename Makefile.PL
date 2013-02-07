@@ -1,10 +1,10 @@
 use inc::Module::Install;
 
-name        'PDF2XML';
-abstract    'Converting PDF to XML';
+name        'Text-PDF2XML';
+abstract    'Convert PDF to XML';
 author      'Joerg Tiedemann';
 license     'gpl';
-version     '0.1';
+version     '0.2';
 
 include     'Module::AutoInstall';
 
@@ -16,8 +16,9 @@ requires 'FindBin'     => 0;
 
 recommends 'File::ShareDir' => 0;
 
-requires_external_bin 'pdftotext';
 requires_external_bin 'java';
+# pdftotext is not required anymore but recommended ....
+# requires_external_bin 'pdftotext';
 
 auto_install;
 

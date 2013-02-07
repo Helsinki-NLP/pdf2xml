@@ -1,4 +1,9 @@
 
+* v0.2 - Thu Feb  7 10:51:16 CET 2013
+
+- running without pdftotext is now possible
+- added lowercasing (can be switched off)
+
 * v0.1 - Tue Jan 29 20:31:42 CET 2013
 
 - initial release

@@ -43,6 +43,9 @@ is( compare( "output.xml", "$Bin/french.dehyphenated.xml" ),0, "pdf2xml (de-hyph
 system("$Bin/../pdf2xml -h -m -r -x $Bin/french.pdf > output.xml 2>/dev/null");
 is( compare( "output.xml", "$Bin/french.raw.xml" ),0, "pdf2xml (raw Apache Tika)" );
 
+system("$Bin/../pdf2xml -X $Bin/french.pdf > output.xml 2>/dev/null");
+is( compare( "output.xml", "$Bin/french.pdfxtk.xml" ),0, "pdf2xml (pdfXtk)" );
+
 # cleanup ....
 
 unlink('output.xml');

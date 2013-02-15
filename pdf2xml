@@ -5,7 +5,7 @@
 
 =head1 NAME
 
-pdf2xml - extract texts from PDF files and put them in XML
+pdf2xml - extract texts from PDF files and put wrap in XML
 
 =head1 SYNOPSIS
 
@@ -19,6 +19,7 @@ pdf2xml - extract texts from PDF files and put them in XML
  -m ............. skip merging character sequences (not recommended)
  -r ............. skip 'pdftotext -raw' (not recommended)
  -x ............. skip standard 'pdftotext'
+ -X ............. use pdfXtk to convert to XHTML (and nothing else)
  -v ............. verbose output
 
 =head1 DESCRIPTION
@@ -54,6 +55,9 @@ Apache Tika: L<http://tika.apache.org>
 
 XPDF (which includes pdftotext): L<http://www.foolabs.com/xpdf/>
 
+pdfXtk L<http://sourceforge.net/projects/pdfxtk/>
+
+
 =head1 COPYRIGHT AND LICENSE
 
 Copyright (C) 2013 by Joerg Tiedemann
@@ -70,10 +74,12 @@ use FindBin qw/$Bin/;
 use IPC::Open2;
 use XML::Parser;
 use XML::Writer;
+use File::Temp qw /tempfile/;
 
-use vars qw($opt_h $opt_L $opt_l $opt_m $opt_r $opt_x $opt_v);
+
+use vars qw($opt_h $opt_L $opt_l $opt_m $opt_r $opt_x $opt_v $opt_X);
 use Getopt::Std;
-getopts('hLl:mrxv');
+getopts('hLl:mrxXv');
 
 # home of shared data (where Apache Tika should be)
 
@@ -91,6 +97,37 @@ my $TIKA     = $SHARED_HOME.'/lib/tika-app-1.3.jar';
 my $PDF2TEXT = `which pdftotext`;chomp($PDF2TEXT);
 
 my $pdf_file = shift(@ARGV);
+
+
+##----------------------------------------------
+## -X ---> use pdfXtk to convert to HTML
+## (and do nothing special about post-processing, at least in this version ....)
+
+
+if ($opt_X){
+    my ($fh, $filename);
+    $filename = $ARGV[0];
+    unless ($filename){
+	($fh, $filename) = tempfile();
+	close $fh;
+	
+    }
+    opendir(my $dh, $SHARED_HOME.'/lib/pdfxtk') || die "can't opendir $SHARED_HOME/lib/pdfxtk: $!";
+    my @jars = grep { /\.jar/ } readdir($dh);
+    closedir $dh;
+    my $CLASSPATH = join( ':', map { $_=$SHARED_HOME.'/lib/pdfxtk/'.$_ } @jars );
+    my $pid = open2(undef, undef, 
+		    $JAVA,'-cp',$CLASSPATH,'at.ac.tuwien.dbai.pdfwrap.ProcessFile',
+		    $pdf_file,$filename);
+    waitpid( $pid, 0 );
+    unless ($ARGV[0]){
+	system('cat',$filename);
+    }
+    exit 1;
+}
+
+##----------------------------------------------
+
 
 # the vocabulary
 my %voc=();

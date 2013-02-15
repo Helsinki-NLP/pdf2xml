@@ -4,7 +4,7 @@ name        'Text-PDF2XML';
 abstract    'Convert PDF to XML';
 author      'Joerg Tiedemann';
 license     'gpl';
-version     '0.2';
+version     '0.2.1';
 
 include     'Module::AutoInstall';
 

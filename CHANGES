@@ -1,4 +1,9 @@
 
+* v0.2.1 Fri Feb 15 16:29:41 CET 2013
+
+- add pdfXtk as another option for converting pdf files
+  (see http://sourceforge.net/projects/pdfxtk/)
+
 * v0.2 - Thu Feb  7 10:51:16 CET 2013
 
 - running without pdftotext is now possible

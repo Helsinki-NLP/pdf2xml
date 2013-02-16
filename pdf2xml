@@ -53,7 +53,7 @@ De-hyphenation heuristics could also be improved. The problem is to keep it as l
 
 Apache Tika: L<http://tika.apache.org>
 
-XPDF (which includes pdftotext): L<http://www.foolabs.com/xpdf/>
+The Poppler Developers - L<http://poppler.freedesktop.org>
 
 pdfXtk L<http://sourceforge.net/projects/pdfxtk/>
 
@@ -95,6 +95,11 @@ unless (-d $SHARED_HOME){
 my $JAVA     = 'java';
 my $TIKA     = $SHARED_HOME.'/lib/tika-app-1.3.jar';
 my $PDF2TEXT = `which pdftotext`;chomp($PDF2TEXT);
+
+# we require recent versions of pdftotext developed by 
+# The Poppler Developers - http://poppler.freedesktop.org
+my $developer = `$PDF2TEXT --help 2>&1 | grep -i 'poppler'`;
+$PDF2TEXT    = undef unless ($developer=~/poppler/i);
 
 my $pdf_file = shift(@ARGV);
 
@@ -140,7 +145,7 @@ if ($opt_l){
 # read output of 'pdftotext -raw'
 
 unless ($opt_r || ( ! -e $PDF2TEXT ) ){
-    my $pid = open2(\*OUT, undef, $PDF2TEXT,'-raw',$pdf_file,'-');
+    my $pid = open2(\*OUT, undef, $PDF2TEXT,'-raw','-enc','UTF-8',$pdf_file,'-');
     binmode(OUT,":encoding(UTF-8)");
 
     my $hyphenated=undef;
@@ -171,7 +176,7 @@ unless ($opt_r || ( ! -e $PDF2TEXT ) ){
 unless ($opt_x){
 
     my $pid = ( -e $PDF2TEXT ) ? 
-	open2(\*OUT, undef, 'pdftotext',$pdf_file,'-') :
+	open2(\*OUT, undef, 'pdftotext','-enc','UTF-8',$pdf_file,'-') :
 	open2(\*OUT, undef, 'java','-jar',$TIKA,'-x',$pdf_file);
 
     binmode(OUT,":encoding(UTF-8)");

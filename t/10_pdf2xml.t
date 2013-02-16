@@ -7,11 +7,11 @@ use Test::More;
 use File::Compare;
 
 my $PDF2XML = $Bin.'/../pdf2xml';
-my $PDF2TEXT = `which pdftotext`;chomp($PDF2TEXT);
+my $POPPLER = `pdftotext --help 2>&1 | grep -i 'poppler'`;
 
 # the following tests only work if pdftotext is available
 
-if (-e $PDF2TEXT){
+if ($POPPLER=~/poppler/i){
     system("$Bin/../pdf2xml $Bin/french.pdf > output.xml 2>/dev/null");
     is( compare( "output.xml", "$Bin/french.xml" ),0, "pdf2xml (standard)" );
 
@@ -31,7 +31,13 @@ if (-e $PDF2TEXT){
     is( compare( "output.xml", "$Bin/french.skip-lowercasing.xml" ),0, "pdf2xml (skip lowercasing)" );
 
 }
+else{
+    system("$Bin/../pdf2xml $Bin/french.pdf > output.xml 2>/dev/null");
+    is( compare( "output.xml", "$Bin/french.tika.xml" ),0, "pdf2xml (standard)" );
 
+    system("$Bin/../pdf2xml -h $Bin/french.pdf > output.xml 2>/dev/null");
+    is( compare( "output.xml", "$Bin/french.tika-hyphenated.xml" ),0, "pdf2xml (keep hyphenation)" );
+}
 
 
 system("$Bin/../pdf2xml -r -x $Bin/french.pdf > output.xml 2>/dev/null");

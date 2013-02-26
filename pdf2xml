@@ -86,7 +86,7 @@ getopts('hLl:mrxXv');
 my $SHARED_HOME;
 eval{ 
     require File::ShareDir; 
-    $SHARED_HOME = File::ShareDir::dist_dir('PDF2XML'); 
+    $SHARED_HOME = File::ShareDir::dist_dir('Text-PDF2XML'); 
 };
 unless (-d $SHARED_HOME){
     $SHARED_HOME = $Bin.'/share';

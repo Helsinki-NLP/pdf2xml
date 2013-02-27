@@ -5,7 +5,7 @@
 
 =head1 NAME
 
-pdf2xml - extract texts from PDF files and put wrap in XML
+pdf2xml - extract text from PDF files and wraps it in XML
 
 =head1 SYNOPSIS
 
@@ -117,7 +117,8 @@ if ($opt_X){
 	close $fh;
 	
     }
-    opendir(my $dh, $SHARED_HOME.'/lib/pdfxtk') || die "can't opendir $SHARED_HOME/lib/pdfxtk: $!";
+    opendir(my $dh, $SHARED_HOME.'/lib/pdfxtk') 
+	|| die "can't opendir $SHARED_HOME/lib/pdfxtk: $!";
     my @jars = grep { /\.jar/ } readdir($dh);
     closedir $dh;
     my $CLASSPATH = join( ':', map { $_=$SHARED_HOME.'/lib/pdfxtk/'.$_ } @jars );
@@ -170,6 +171,7 @@ unless ($opt_r || ( ! -e $PDF2TEXT ) ){
     waitpid( $pid, 0 );
 }
 
+my $LONGEST_WORD = longest_word(\%voc);
 
 # read output of standard 'pdftotext' (or Tika if no pdftotext is available)
 
@@ -192,6 +194,7 @@ unless ($opt_x){
     waitpid( $pid, 0 );
 }
 
+$LONGEST_WORD = longest_word(\%voc);
 
 
 binmode(STDOUT,":encoding(UTF-8)");
@@ -268,7 +271,6 @@ sub xml_end_simple{
 
 
 
-
 sub find_words{
     my @words = ();
 
@@ -279,28 +281,51 @@ sub find_words{
     my $remaining = \@tokens1;
     my $current   = \@tokens2;
 
+    # max number of tokens to be considered
+    my $LENGTH_THR = $LONGEST_WORD || @tokens1;
+
     while (@{$remaining}){
 	($current,$remaining) = ($remaining,$current);
 	@{$remaining} = ();
+
+	# pessimistic selection of tokens: 
+	# not more than the length of the longest known word
+	# (assuming that each token is at least 1 character long)
+	my @more = splice(@{$current},$LENGTH_THR);
+
+	# join all current tokens and see if they form a known word
 	my $str = join('',@{$current});
 	$str = lc($str) unless ($opt_L);
+
+	# remove the final token until we have a known word
 	until (exists $voc{$str}){
 	    last unless (@{$current});
 	    unshift( @{$remaining}, pop(@{$current}) );
 	    $str = join('',@{$current});
 	    $str = lc($str) unless ($opt_L);
 	}
+
+	# more than one token? 
+	# --> successfully (?) found a token sequence that should be merged
 	if ($#{$current}>0){
 	    $voc{$str}++;
 	    print STDERR join(' ',@{$current})," --> $str\n" if ($opt_v);
 	}
+
 	# need to restore non-lowercased version if necessary
 	$str = join('',@{$current}) unless ($opt_L);
+
+	# add the detected word to the list (or the next one)
 	if ($str){ push(@words,$str); }
 	else{      push(@words,shift @{$remaining}); }
+
+	# add additional tokens from the sentence
+	push(@{$remaining},@more);
     }
     return @words;
 }
+
+
 
 sub read_vocabulary{
     my ($voc,$file) = @_;
@@ -319,6 +344,16 @@ sub read_vocabulary{
 	    $$voc{$_}++;
 	}
     }
+}
+
+sub longest_word{
+    my ($voc) = @_;
+    my $len=0;
+    foreach (keys %{$voc}){
+	my $l = length($_);
+	$len = $l if ($l > $len);
+    }
+    return $len;
 }
 
 __END__

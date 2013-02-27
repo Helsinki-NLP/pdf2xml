@@ -1,4 +1,9 @@
 
+* v0.2.2 Wed Feb 27 20:33:09 CET 2013
+
+- fixed problem with wrong shared-dir settings
+- make word-merging a bit more efficient
+
 * v0.2.1 Fri Feb 15 16:29:41 CET 2013
 
 - add pdfXtk as another option for converting pdf files

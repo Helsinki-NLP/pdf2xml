@@ -98,8 +98,10 @@ my $PDF2TEXT = `which pdftotext`;chomp($PDF2TEXT);
 
 # we require recent versions of pdftotext developed by 
 # The Poppler Developers - http://poppler.freedesktop.org
-my $developer = `$PDF2TEXT --help 2>&1 | grep -i 'poppler'`;
-$PDF2TEXT    = undef unless ($developer=~/poppler/i);
+if (-e $PDF2TEXT){
+    my $developer = `$PDF2TEXT --help 2>&1 | grep -i 'poppler'`;
+    $PDF2TEXT    = undef unless ($developer=~/poppler/i);
+}
 
 my $pdf_file = shift(@ARGV);
 

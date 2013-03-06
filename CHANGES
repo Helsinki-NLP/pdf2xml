@@ -1,4 +1,8 @@
 
+* v0.2.3 Wed Mar  6 23:12:22 CET 2013
+
+- fixed test suite
+
 * v0.2.2 Wed Feb 27 20:33:09 CET 2013
 
 - fixed problem with wrong shared-dir settings

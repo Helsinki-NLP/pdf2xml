@@ -1,6 +1,7 @@
 #!/usr/bin/perl
 #-*-perl-*-
 
+use utf8;
 use FindBin qw( $Bin );
 
 use Test::More;
@@ -62,11 +63,12 @@ done_testing;
 
 
 # there is one line that destroys the tests! take it away!
+# meta includes localized time! --> remove
 
 sub my_compare{
     my ($file1,$file2) = @_;
-    system("grep -v '(U ο υ a vu Q' $file1 > $file1.tmp");
-    system("grep -v '(U ο υ a vu Q' $file2 > $file2.tmp");
+    system("grep -v '(U ο υ a vu Q' $file1 | grep -v '<meta' > $file1.tmp");
+    system("grep -v '(U ο υ a vu Q' $file2 | grep -v '<meta' > $file2.tmp");
     my $ret = compare("$file1.tmp","$file2.tmp");
     unlink("$file1.tmp");
     unlink("$file2.tmp");

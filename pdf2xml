@@ -15,11 +15,11 @@ pdf2xml - extract text from PDF files and wraps it in XML
 
  -h ............. skip de-hypenation (keep hyphenated words)
  -l lexicon ..... provide a list of words or a text in the target language
- -L ............. skip lowercasing (which is switched in by default)
+ -L ............. skip lowercasing (which is switched on by default)
  -m ............. skip merging character sequences (not recommended)
  -r ............. skip 'pdftotext -raw' (not recommended)
  -x ............. skip standard 'pdftotext'
- -X ............. use pdfXtk to convert to XHTML (and nothing else)
+ -X ............. use pdfXtk to convert to XHTML
  -v ............. verbose output
 
 =head1 DESCRIPTION
@@ -96,6 +96,11 @@ my $JAVA     = 'java';
 my $TIKA     = $SHARED_HOME.'/lib/tika-app-1.3.jar';
 my $PDF2TEXT = `which pdftotext`;chomp($PDF2TEXT);
 
+my $LONGEST_WORD = undef;
+
+my $SPLIT_CHAR_IF_NECESSARY = 0;
+my $SPLIT_CHAR = 0;
+
 # we require recent versions of pdftotext developed by 
 # The Poppler Developers - http://poppler.freedesktop.org
 if (-e $PDF2TEXT){
@@ -105,99 +110,38 @@ if (-e $PDF2TEXT){
 
 my $pdf_file = shift(@ARGV);
 
+binmode(STDOUT,":encoding(UTF-8)");
+binmode(STDERR,":encoding(UTF-8)");
 
-##----------------------------------------------
-## -X ---> use pdfXtk to convert to HTML
-## (and do nothing special about post-processing, at least in this version ....)
+#-------------------------------------------------------
+# use pdftotext or Apache Tika to fill the vocabulary 
+# and to find possibly hyphenated words
+#-------------------------------------------------------
 
-
-if ($opt_X){
-    my ($fh, $filename);
-    $filename = $ARGV[0];
-    unless ($filename){
-	($fh, $filename) = tempfile();
-	close $fh;
-	
-    }
-    opendir(my $dh, $SHARED_HOME.'/lib/pdfxtk') 
-	|| die "can't opendir $SHARED_HOME/lib/pdfxtk: $!";
-    my @jars = grep { /\.jar/ } readdir($dh);
-    closedir $dh;
-    my $CLASSPATH = join( ':', map { $_=$SHARED_HOME.'/lib/pdfxtk/'.$_ } @jars );
-    my $pid = open2(undef, undef, 
-		    $JAVA,'-cp',$CLASSPATH,'at.ac.tuwien.dbai.pdfwrap.ProcessFile',
-		    $pdf_file,$filename);
-    waitpid( $pid, 0 );
-    unless ($ARGV[0]){
-	system('cat',$filename);
-    }
-    exit 1;
-}
-
-##----------------------------------------------
-
-
-# the vocabulary
+# the vocabulary hash
 my %voc=();
 
 if ($opt_l){
     &read_vocabulary(\%voc,$opt_l);
 }
 
-
-# read output of 'pdftotext -raw'
-
 unless ($opt_r || ( ! -e $PDF2TEXT ) ){
-    my $pid = open2(\*OUT, undef, $PDF2TEXT,'-raw','-enc','UTF-8',$pdf_file,'-');
-    binmode(OUT,":encoding(UTF-8)");
-
-    my $hyphenated=undef;
-    while(<OUT>){
-	chomp;
-	my @tok=split(/\s+/);
-	if ($hyphenated){
-	    $voc{$hyphenated.$tok[0]}++;
-	    print STDERR "possibly hyphenated: $hyphenated -- $tok[0]\n" if ($opt_v);
-	    $hyphenated=undef;
-	}
-	if (@tok){
-	    if ($tok[-1]=~/^(.*)-/){
-		$hyphenated=$1;
-	    }
-	}
-	foreach (@tok){
-	    $voc{$_}++;
-	}
-    }
-    close(OUT);
-    waitpid( $pid, 0 );
+    &run_pdftotext_raw($pdf_file,\%voc);
 }
-
-my $LONGEST_WORD = longest_word(\%voc);
-
-# read output of standard 'pdftotext' (or Tika if no pdftotext is available)
+$LONGEST_WORD = longest_word(\%voc);
 
 unless ($opt_x){
-
-    my $pid = ( -e $PDF2TEXT ) ? 
-	open2(\*OUT, undef, 'pdftotext','-enc','UTF-8',$pdf_file,'-') :
-	open2(\*OUT, undef, 'java','-jar',$TIKA,'-x',$pdf_file);
-
-    binmode(OUT,":encoding(UTF-8)");
-
-    while(<OUT>){
-	chomp;
-	my @words = find_words($_);
-	foreach (@words){
-	    $voc{$_}++;
-	}
-    }
-    close(OUT);
-    waitpid( $pid, 0 );
+    &run_pdftotext($pdf_file,\%voc);
 }
 
 $LONGEST_WORD = longest_word(\%voc);
 
+
+#-------------------------------------------------------
+# use Apache Tika or pdfxtk to produce XHTML output
+# and find character sequences that need to be merged
+# to form known words (split character sequences, hyphenated words)
+#-------------------------------------------------------
 
 binmode(STDOUT,":encoding(UTF-8)");
 my $writer = XML::Writer->new( OUTPUT => \*STDOUT, 
@@ -212,11 +156,27 @@ my $parser = new XML::Parser( Handlers => {
     End     => \&xml_end } );
 
 
-my $pid = open2(\*OUT, undef, 'java','-jar',$TIKA,'-x',$pdf_file);
-$parser->parse(*OUT);
+# use pdfxtk or Apache Tika (default)
 
-# close(OUT);
-# waitpid( $pid, 0 );
+if ($opt_X){
+    my $out_file = &run_pdfxtk($pdf_file);
+    open OUT,"<$out_file" || die "cannot read from pdfxtkoutput ($out_file)\n";
+    binmode(OUT,":encoding(UTF-8)");
+    $SPLIT_CHAR_IF_NECESSARY = 1;
+    my $handler = $parser->parse_start;
+    while (<OUT>){
+	$handler->parse_more($_);
+    }
+    close OUT;
+}
+else{
+    my $pid = open2(\*OUT, undef, 'java','-jar',$TIKA,'-x',$pdf_file);
+    $parser->parse(*OUT);
+    # close(OUT);
+    # waitpid( $pid, 0 );
+}
+
+
 
 
 sub xml_start{ 
@@ -244,9 +204,13 @@ sub xml_end{
 		}
 	    }
 
-	    my @tok = find_words( $OriginalStr );
+	    my @tok = find_words( $OriginalStr, 
+				  $SPLIT_CHAR_IF_NECESSARY, 
+				  $SPLIT_CHAR );
 	    if ($DehyphenatedStr){
-		my @tok2 = find_words( $DehyphenatedStr );
+		my @tok2 = find_words( $DehyphenatedStr, 
+				       $SPLIT_CHAR_IF_NECESSARY, 
+				       $SPLIT_CHAR );
 		@tok = @tok2 if ($#tok2 < $#tok);
 	    }
 	    push(@words,@tok);
@@ -273,11 +237,129 @@ sub xml_end_simple{
 
 
 
-sub find_words{
-    my @words = ();
+# convert pdf's using pdfxtk
 
-    my @tokens1 = split(/\s+/,$_[0]);
-    return @tokens1 if ($opt_m);          # skip merging ...
+sub run_pdfxtk{
+    my $pdf_file = shift;
+    my $out_file = shift;
+
+    unless ($out_file){
+	(my $fh, $out_file) = tempfile();
+	close $fh;
+	
+    }
+    opendir(my $dh, $SHARED_HOME.'/lib/pdfxtk') 
+	|| die "can't opendir $SHARED_HOME/lib/pdfxtk: $!";
+    my @jars = grep { /\.jar/ } readdir($dh);
+    closedir $dh;
+    my $CLASSPATH = join( ':', map { $_=$SHARED_HOME.'/lib/pdfxtk/'.$_ } @jars );
+    my $pid = open2(undef, undef, 
+		    $JAVA,'-cp',$CLASSPATH,'at.ac.tuwien.dbai.pdfwrap.ProcessFile',
+		    $pdf_file,$out_file);
+    waitpid( $pid, 0 );
+    return $out_file;
+}
+
+
+# read output of 'pdftotext -raw'
+
+sub run_pdftotext_raw{
+    my $pdf_file = shift;
+    my $voc = shift;
+
+    my $pid = open2(\*OUT, undef, $PDF2TEXT,'-raw','-enc','UTF-8',$pdf_file,'-');
+    binmode(OUT,":encoding(UTF-8)");
+
+    my $hyphenated=undef;
+    while(<OUT>){
+	chomp;
+	my @tok=split(/\s+/);
+	if ($hyphenated){
+	    my $str = $opt_L ? lc($hyphenated.$tok[0]) : $hyphenated.$tok[0];
+	    $$voc{$str}++;
+	    print STDERR "possibly hyphenated: $hyphenated -- $tok[0]\n" if ($opt_v);
+	    $hyphenated=undef;
+	}
+	if (@tok){
+	    if ($tok[-1]=~/^(.*)-/){
+		$hyphenated=$1;
+	    }
+	}
+	foreach (@tok){
+	    $_ = lc($_) unless ($opt_L);
+	    $$voc{$_}++;
+	}
+    }
+    close(OUT);
+    waitpid( $pid, 0 );
+}
+
+
+# read output of standard 'pdftotext' (or Tika if no pdftotext is available)
+
+sub run_pdftotext{
+    my $pdf_file = shift;
+    my $voc = shift;
+
+    my $pid = ( -e $PDF2TEXT ) ? 
+	open2(\*OUT, undef, 'pdftotext','-enc','UTF-8',$pdf_file,'-') :
+	open2(\*OUT, undef, 'java','-jar',$TIKA,'-t',$pdf_file);
+
+    binmode(OUT,":encoding(UTF-8)");
+
+    my $hyphenated=undef;
+    while(<OUT>){
+	chomp;
+	my @words = find_words($_);
+	if ($hyphenated){
+	    my $str = $opt_L ? lc($hyphenated.$words[0]) : $hyphenated.$words[0];
+	    $$voc{$str}++;
+	    print STDERR "possibly hyphenated: $hyphenated -- $words[0]\n" if ($opt_v);
+	    $hyphenated=undef;
+	}
+	if (@words){
+	    if ($words[-1]=~/^(.*)-/){
+		$hyphenated=$1;
+	    }
+	}
+	foreach (@words){
+	    $_ = lc($_) unless ($opt_L);
+	    $$voc{$_}++;
+	}
+    }
+    close(OUT);
+    waitpid( $pid, 0 );
+}
+
+
+
+
+
+# find the longest known words in a string
+#
+#  $split_char_when_necessary = 1 ---> split into character sequences if string has no whitespaces
+#  $split_char = 1 ---> always split into character sequences
+
+sub find_words{
+    my ($string, $split_char_when_necessary, $split_char) = @_;
+
+    my @words = ();
+    $string=~s/^\s*//;
+
+    return split(/\s+/,$string) if ($opt_m);          # skip merging ...
+
+    my @tokens1;
+    if ($split_char_when_necessary){
+	unless ($string=~/\s/){
+	    @tokens1 = split(//,$string);
+	}
+    }
+    elsif ($split_char){
+	@tokens1 = split(//,$string);
+    }
+    unless (@tokens1){
+	@tokens1 = split(/\s+/,$string);
+    }
 
     my @tokens2   = ();
     my $remaining = \@tokens1;

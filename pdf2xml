@@ -347,26 +347,11 @@ sub run_pdftotext{
 #  $split_char_when_necessary = 1 ---> split into character sequences if string has no whitespaces
 #  $split_char = 1 ---> always split into character sequences
 
-sub find_words{
-    my ($string, $split_char_when_necessary, $split_char) = @_;
+sub find_longest_words{
+    my @tokens1 = @_;
 
+    return @tokens1 if ($opt_m);          # skip merging ...
     my @words = ();
-    $string=~s/^\s*//;
-
-    return split(/\s+/,$string) if ($opt_m);          # skip merging ...
-
-    my @tokens1;
-    if ($split_char){
-	@tokens1 = split(//,$string);
-    }
-    elsif ($split_char_when_necessary){
-	unless ($string=~/\s/){
-	    @tokens1 = split(//,$string);
-	}
-    }
-    unless (@tokens1){
-	@tokens1 = split(/\s+/,$string);
-    }
 
     my @tokens2   = ();
     my $remaining = \@tokens1;
@@ -415,6 +400,74 @@ sub find_words{
     }
     return @words;
 }
+
+
+
+
+sub find_words{
+    my ($string,$pdfxtk,$charsplit) = @_;
+    if ($charsplit){
+	return find_words_charlevel($string);
+    }
+    if ($pdfxtk){
+	return find_words_pdfxtk($string);
+    }
+    return find_words_standard($string);
+}
+
+
+sub find_words_standard{
+    $_[0]=~s/^\s*//;
+    return find_longest_words( split(/\s+/,$_[0]) );
+}
+
+sub find_words_charlevel{
+    $_[0]=~s/^\s*//;
+    return find_longest_words( split(//,$_[0]) );
+}
+
+
+sub find_words_pdfxtk{
+    my $string = shift;
+
+    unless ($string=~/\s/){
+	return find_words_charlevel($string);
+    }
+
+    $string=~s/^\s*//;
+    my @words = ();
+    my @tokens = split(/\s+/,$string);
+
+    foreach (@tokens){
+
+	# suspiciously long words ....
+	if ( length($_) > $LONGEST_WORD ){
+	    push(@words, find_words_charlevel($_) );
+	}
+
+	# upper-case letters following a lower-cased one ...
+	elsif ( $_ =~/\p{Ll}\p{Lu}/ ){
+	    push(@words, find_words_charlevel($_) );
+	}
+	else{
+	    push(@words, $_);
+	}
+    }
+
+    foreach (0..$#words){
+	if ($words[$_]=~/\-/){
+	    my $str = $words[$_];
+	    $str=~s/\-//g;
+	    if (exists $voc{$str}){
+		$words[$_]=$str;
+	    }
+	}
+    }
+
+    return @words;
+}
+
+
 
 
 

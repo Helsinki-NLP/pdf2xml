@@ -429,12 +429,12 @@ sub find_words_charlevel{
 
 sub find_words_pdfxtk{
     my $string = shift;
+    $string=~s/^\s*//;
 
     unless ($string=~/\s/){
 	return find_words_charlevel($string);
     }
 
-    $string=~s/^\s*//;
     my @words = ();
     my @tokens = split(/\s+/,$string);
 

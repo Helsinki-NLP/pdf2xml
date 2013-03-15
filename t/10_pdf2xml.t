@@ -52,8 +52,12 @@ is( my_compare( "output.xml", "$Bin/french.dehyphenated.xml" ),0, "pdf2xml (de-h
 system("$Bin/../pdf2xml -h -m -r -x $Bin/french.pdf > output.xml 2>/dev/null");
 is( my_compare( "output.xml", "$Bin/french.raw.xml" ),0, "pdf2xml (raw Apache Tika)" );
 
-system("$Bin/../pdf2xml -X $Bin/french.pdf > output.xml 2>/dev/null");
-is( my_compare( "output.xml", "$Bin/french.pdfxtk.xml" ),0, "pdf2xml (pdfXtk)" );
+
+# the test with pdfxtk cannot work on all systems because it depends on whether pdftotext exists
+
+# system("$Bin/../pdf2xml -X $Bin/french.pdf > output.xml 2>/dev/null");
+# is( my_compare( "output.xml", "$Bin/french.pdfxtk.xml" ),0, "pdf2xml (pdfXtk)" );
+
 
 # cleanup ....
 

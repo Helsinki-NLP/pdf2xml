@@ -18,7 +18,7 @@ pdf2xml - extract text from PDF files and wraps it in XML
  -m ............. skip merging character sequences (not recommended)
  -r ............. skip 'pdftotext -raw' (not recommended)
  -x ............. skip standard 'pdftotext'
- -X ............. use pdfXtk to convert to XHTML (and nothing else)
+ -X ............. use pdfXtk to convert to XHTML
  -v ............. verbose output
 
 =head1 DESCRIPTION

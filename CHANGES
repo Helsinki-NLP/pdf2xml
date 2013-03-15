@@ -1,4 +1,10 @@
 
+* v0.2.4 Fri Mar 15 10:34:42 CET 2013
+
+- dehyphenation and word-finding in pdfxtk-mode (-X)
+- now also splits strings into known words
+  (solves a problem with pdfxtk conversions)
+
 * v0.2.3 Wed Mar  6 23:12:22 CET 2013
 
 - fixed test suite

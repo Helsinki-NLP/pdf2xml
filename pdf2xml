@@ -512,6 +512,16 @@ sub find_words_pdfxtk{
     unless ($string=~/\s/){
 	return find_words_charlevel($string);
     }
+    
+    my %ligatures = ();
+    foreach (values %LIGATURES){
+	$ligatures{$_} = $_;
+    }
+    # sometimes only the second letter remains after conversion
+    # (using pdftotext for example)
+    # TODO: 'ffi' can also become 'i' (example: Effizienz --> Eiizienz)
+    $ligatures{'l'} = 'fl';
+    $ligatures{'i'} = 'fi';
 
     my @words = ();
     my @tokens = split(/\s+/,$string);
@@ -570,10 +580,10 @@ WORD:    while ($i<$#words){
 	    # check if pdfxtk swallowed ligatures such as 'ff' and 'fi'
 	    else{
 		foreach my $l (sort {length($b) <=> length($a)} 
-			       values %LIGATURES){
+			       keys %ligatures){
 		    if (exists $voc{$this.$l.$next}){
-			push(@clean,$words[$i].$l.$words[$i+1]);
-			print STDERR "add '$l' and merge $words[$i] + $words[$i+1]\n" if ($opt_v);
+			push(@clean,$words[$i].$ligatures{$l}.$words[$i+1]);
+			print STDERR "add '$ligatures{$l}' and merge $words[$i] + $words[$i+1]\n" if ($opt_v);
 			$i+=2;
 			next WORD;
 		    }
@@ -596,15 +606,15 @@ WORD:    while ($i<$#words){
 	# if the current word does not exist in the vocabulary
 	# check if adding ligature strings helps
 	if (! exists $voc{$this}){
-	    foreach my $l (sort {length($b) <=> length($a)} values %LIGATURES){
+	    foreach my $l (sort {length($b) <=> length($a)} values %ligatures){
 		if (exists $voc{$l.$this}){
-		    print STDERR "add '$l' to $clean[$i]\n" if ($opt_v);
-		    $clean[$i]=$l.$clean[$i];
+		    print STDERR "add '$ligatures{$l}' to $clean[$i]\n" if ($opt_v);
+		    $clean[$i]=$ligatures{$l}.$clean[$i];
 		    last;
 		}
 		elsif (exists $voc{$this.$l}){
-		    print STDERR "add '$l' after $clean[$i]\n" if ($opt_v);
-		    $clean[$i]=$clean[$i].$l;
+		    print STDERR "add '$ligatures{$l}' after $clean[$i]\n" if ($opt_v);
+		    $clean[$i]=$clean[$i].$ligatures{$l};
 		    last;
 		}
 	    }

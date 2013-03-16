@@ -15,6 +15,8 @@ pdf2xml - extract text from PDF files and wraps it in XML
 
  -c ............. split strings into character sequences before finding words
  -h ............. skip de-hypenation (keep hyphenated words)
+ -H ............. max heap size for Java VM
+ -J path ........ path to Java
  -l lexicon ..... provide a list of words or a text in the target language
  -L ............. skip lowercasing (which is switched on by default)
  -m ............. skip merging character sequences (not recommended)
@@ -78,9 +80,10 @@ use XML::Writer;
 use File::Temp qw /tempfile/;
 
 
-use vars qw($opt_c $opt_h $opt_L $opt_l $opt_m $opt_r $opt_x $opt_v $opt_X);
+use vars qw($opt_c $opt_h $opt_H $opt_J $opt_L $opt_l $opt_m $opt_r 
+            $opt_x $opt_v $opt_X);
 use Getopt::Std;
-getopts('chLl:mrxXv');
+getopts('chH:J:Ll:mrxXv');
 
 # home of shared data (where Apache Tika should be)
 
@@ -93,9 +96,12 @@ unless (-d $SHARED_HOME){
     $SHARED_HOME = $Bin.'/share';
 }
 
-my $JAVA     = 'java';
-my $TIKA     = $SHARED_HOME.'/lib/tika-app-1.3.jar';
-my $PDF2TEXT = `which pdftotext`;chomp($PDF2TEXT);
+
+my $JAVA           = $opt_J || 'java';
+my $JAVA_HEAP_SIZE = $opt_H || '1g';
+my $TIKA           = $SHARED_HOME.'/lib/tika-app-1.3.jar';
+my $PDF2TEXT       = `which pdftotext`;chomp($PDF2TEXT);
+
 
 # some global variables used for finding words in strings
 # LONGEST_WORD = length of the longest word in the vocabulary
@@ -177,7 +183,8 @@ if ($opt_X){
     close OUT;
 }
 else{
-    my $pid = open2(\*OUT, undef, 'java','-jar',$TIKA,'-x',$pdf_file);
+    my $pid = open2(\*OUT, undef, $JAVA,'-Xmx'.$JAVA_HEAP_SIZE,
+		    '-jar',$TIKA,'-x',$pdf_file);
     $parser->parse(*OUT);
     # close(OUT);
     # waitpid( $pid, 0 );
@@ -261,7 +268,10 @@ sub run_pdfxtk{
     closedir $dh;
     my $CLASSPATH = join( ':', map { $_=$SHARED_HOME.'/lib/pdfxtk/'.$_ } @jars );
     my $pid = open2(undef, undef, 
-		    $JAVA,'-cp',$CLASSPATH,'at.ac.tuwien.dbai.pdfwrap.ProcessFile',
+		    $JAVA,
+		    '-Xmx'.$JAVA_HEAP_SIZE,
+		    '-cp',$CLASSPATH,
+		    'at.ac.tuwien.dbai.pdfwrap.ProcessFile',
 		    $pdf_file,$out_file);
     waitpid( $pid, 0 );
     return $out_file;
@@ -310,7 +320,8 @@ sub run_pdftotext{
 
     my $pid = ( -e $PDF2TEXT ) ? 
 	open2(\*OUT, undef, 'pdftotext','-enc','UTF-8',$pdf_file,'-') :
-	open2(\*OUT, undef, 'java','-jar',$TIKA,'-t',$pdf_file);
+	open2(\*OUT, undef, $JAVA,'-Xmx'.$JAVA_HEAP_SIZE,
+	      '-jar',$TIKA,'-t',$pdf_file);
 
     binmode(OUT,":encoding(UTF-8)");
 
@@ -427,6 +438,8 @@ sub find_words_charlevel{
 }
 
 
+# post-process conversion by pdfxtk
+
 sub find_words_pdfxtk{
     my $string = shift;
     $string=~s/^\s*//;
@@ -458,13 +471,71 @@ sub find_words_pdfxtk{
 	if ($words[$_]=~/\-/){
 	    my $str = $words[$_];
 	    $str=~s/\-//g;
-	    if (exists $voc{$str}){
+	    my $lc_str = $opt_L ? $str : lc($str);
+	    if (exists $voc{$lc_str}){
 		$words[$_]=$str;
 	    }
 	}
     }
 
-    return @words;
+    # more post-processing: merge words if necessary
+    # TODO: check if this does more harm than good for some languages
+    #       the heuristics are quite effective for German at least ....
+    # TODO: add other ligature-strings that need to be checked for
+
+    my @clean=();
+    my $i=0;
+WORD:    while ($i<=$#words){
+	my $this = $words[$i];
+	my $next = $words[$i+1];
+	$this = lc($this) unless ($opt_L);
+	$next = lc($next) unless ($opt_L);
+
+	# if either this or the next word does not exist in the vocabulary:
+	if (! exists $voc{$this} || ! exists $voc{$next} ){
+
+	    # check if a concatenated version exists
+	    if (exists $voc{$this.$next}){
+		push(@clean,$words[$i].$words[$i+1]);
+		print STDERR "merge $words[$i]+$words[$i+1]\n" if ($opt_v);
+		$i+=2;
+		next;
+	    }
+
+	    # check if pdfxtk swallowed ligatures such as 'ff' and 'fi'
+	    else{
+		for my $l ('ff','fi','fl'){
+		    if (exists $voc{$this.$l.$next}){
+			push(@clean,$words[$i].$l.$words[$i+1]);
+			print STDERR "add '$l' and merge $words[$i] + $words[$i+1]\n" 
+			    if ($opt_v);
+			$i+=2;
+			next WORD;
+		    }
+		}
+	    }
+	}
+
+	# if the current word does not exist in the vocabulary
+	# check if adding ligature strings helps
+	if (! exists $voc{$this}){
+	    for my $l ('fi','fl'){
+		if (exists $voc{$l.$this}){
+		    push(@clean,$l.$words[$i]);
+		    print STDERR "add '$l' to $words[$i]\n" if ($opt_v);
+		    $i++;
+		    next WORD;
+		}
+	    }
+	}
+
+	# nothing special? --> just add the current word
+	push(@clean,$words[$i]);
+	$i++;
+    }
+
+
+    return @clean;
 }
 
 

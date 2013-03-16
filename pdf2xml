@@ -121,6 +121,27 @@ if (-e $PDF2TEXT){
     $PDF2TEXT    = undef unless ($developer=~/poppler/i);
 }
 
+
+my %LIGATURES = (
+    "\x{0132}" => 'IJ',
+    "\x{0133}" => 'ij',
+    "\x{FB00}" => 'ff',
+    "\x{FB01}" => 'fi',
+    "\x{FB02}" => 'fl',
+    "\x{FB03}" => 'ffi',
+    "\x{FB04}" => 'ffl',
+    "\x{FB06}" => 'st');
+
+my $LIGATURES_MATCH = join('|',sort {length($b) <=> length($a)} 
+			   keys %LIGATURES);
+
+
+sub normalize_string{
+    chomp($_[0]);
+    $_[0]=~s/($LIGATURES_MATCH)/$LIGATURES{$1}/ge;
+}
+
+
 my $pdf_file = shift(@ARGV);
 
 binmode(STDOUT,":encoding(UTF-8)");
@@ -146,6 +167,11 @@ $LONGEST_WORD = longest_word(\%voc);
 unless ($opt_x){
     &run_pdftotext($pdf_file,\%voc);
 }
+# run even Apache Tika (unless run_pdftotext does it already)
+if ( -e $PDF2TEXT || $opt_x ){
+    &run_tika($pdf_file,\%voc);
+}
+
 
 $LONGEST_WORD = longest_word(\%voc);
 
@@ -178,6 +204,7 @@ if ($opt_X){
     $SPLIT_CHAR_IF_NECESSARY = 1;
     my $handler = $parser->parse_start;
     while (<OUT>){
+#	normalize_string($_);
 	$handler->parse_more($_);
     }
     close OUT;
@@ -202,6 +229,7 @@ sub xml_end{
     if ($_[0]->{STRING}){
 
 	my @words=();
+	normalize_string($_[0]->{STRING});
 	my @lines = split(/\n+/,$_[0]->{STRING});
 
 	while (@lines){
@@ -289,7 +317,8 @@ sub run_pdftotext_raw{
 
     my $hyphenated=undef;
     while(<OUT>){
-	chomp;
+	normalize_string($_);
+#	chomp;
 	my @tok=split(/\s+/);
 	if ($hyphenated){
 	    my $str = $opt_L ? lc($hyphenated.$tok[0]) : $hyphenated.$tok[0];
@@ -327,6 +356,42 @@ sub run_pdftotext{
 
     my $hyphenated=undef;
     while(<OUT>){
+#	chomp;
+	normalize_string($_);
+	my @words = find_words($_);
+	if ($hyphenated){
+	    my $str = $opt_L ? lc($hyphenated.$words[0]) : $hyphenated.$words[0];
+	    $$voc{$str}++;
+	    print STDERR "possibly hyphenated: $hyphenated -- $words[0]\n" if ($opt_v);
+	    $hyphenated=undef;
+	}
+	if (@words){
+	    if ($words[-1]=~/^(.*)-/){
+		$hyphenated=$1;
+	    }
+	}
+	foreach (@words){
+	    $_ = lc($_) unless ($opt_L);
+	    $$voc{$_}++;
+	}
+    }
+    close(OUT);
+    waitpid( $pid, 0 );
+}
+
+
+sub run_tika{
+    my $pdf_file = shift;
+    my $voc = shift;
+
+    my $pid = open2(\*OUT, undef, $JAVA,'-Xmx'.$JAVA_HEAP_SIZE,
+		    '-jar',$TIKA,'-t',$pdf_file);
+
+    binmode(OUT,":encoding(UTF-8)");
+
+    my $hyphenated=undef;
+    while(<OUT>){
+	normalize_string($_);
 	chomp;
 	my @words = find_words($_);
 	if ($hyphenated){
@@ -485,7 +550,7 @@ sub find_words_pdfxtk{
 
     my @clean=();
     my $i=0;
-WORD:    while ($i<=$#words){
+WORD:    while ($i<$#words){
 	my $this = $words[$i];
 	my $next = $words[$i+1];
 	$this = lc($this) unless ($opt_L);
@@ -504,27 +569,14 @@ WORD:    while ($i<=$#words){
 
 	    # check if pdfxtk swallowed ligatures such as 'ff' and 'fi'
 	    else{
-		for my $l ('ff','fi','fl'){
+		foreach my $l (sort {length($b) <=> length($a)} 
+			       values %LIGATURES){
 		    if (exists $voc{$this.$l.$next}){
 			push(@clean,$words[$i].$l.$words[$i+1]);
-			print STDERR "add '$l' and merge $words[$i] + $words[$i+1]\n" 
-			    if ($opt_v);
+			print STDERR "add '$l' and merge $words[$i] + $words[$i+1]\n" if ($opt_v);
 			$i+=2;
 			next WORD;
 		    }
-		}
-	    }
-	}
-
-	# if the current word does not exist in the vocabulary
-	# check if adding ligature strings helps
-	if (! exists $voc{$this}){
-	    for my $l ('fi','fl'){
-		if (exists $voc{$l.$this}){
-		    push(@clean,$l.$words[$i]);
-		    print STDERR "add '$l' to $words[$i]\n" if ($opt_v);
-		    $i++;
-		    next WORD;
 		}
 	    }
 	}
@@ -533,7 +585,31 @@ WORD:    while ($i<=$#words){
 	push(@clean,$words[$i]);
 	$i++;
     }
+    if (@words){
+	push(@clean,$words[-1]);
+    }
 
+    foreach my $i (0..$#clean){
+	my $this = $clean[$i];
+	$this = lc($this) unless ($opt_L);
+
+	# if the current word does not exist in the vocabulary
+	# check if adding ligature strings helps
+	if (! exists $voc{$this}){
+	    foreach my $l (sort {length($b) <=> length($a)} values %LIGATURES){
+		if (exists $voc{$l.$this}){
+		    print STDERR "add '$l' to $clean[$i]\n" if ($opt_v);
+		    $clean[$i]=$l.$clean[$i];
+		    last;
+		}
+		elsif (exists $voc{$this.$l}){
+		    print STDERR "add '$l' after $clean[$i]\n" if ($opt_v);
+		    $clean[$i]=$clean[$i].$l;
+		    last;
+		}
+	    }
+	}
+    }
 
     return @clean;
 }

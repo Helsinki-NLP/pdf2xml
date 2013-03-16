@@ -10,22 +10,12 @@ pdf2xml - extract text from PDF files and wraps it in XML
 
  pdf2xml [OPTIONS] pdf-file > output.xml
 
-=head1 OPTIONS
-
- -h ............. skip de-hypenation (keep hyphenated words)
- -l lexicon ..... provide a list of words or a text in the target language
- -L ............. skip lowercasing (which is switched in by default)
- -m ............. skip merging character sequences (not recommended)
- -r ............. skip 'pdftotext -raw' (not recommended)
- -x ............. skip standard 'pdftotext'
- -X ............. use pdfXtk to convert to XHTML
- -v ............. verbose output
+For more information, see the man-pages of the command-line tool C<pdf2xml>.
 
 =head1 DESCRIPTION
 
-pdf2xml calls pdftotext and Apache Tika to extract text from PDf files and to convert them to XML (actually XHTML). It also uses some heuristics to find words that should not be split into character sequences (which often happens with pdf-text extraction tools) and it also tries to put hyphenated words together.
-
-Example: raw is without cleanup heuristics
+Extract text from PDF using external tools and some post-processing heuristics.
+Here is an example with and without post-processing:
 
   raw:    <p>PRESENTATION ET R A P P E L DES PRINCIPAUX RESULTATS 9</p>
   clean:  <p>PRESENTATION ET RAPPEL DES PRINCIPAUX RESULTATS 9</p>

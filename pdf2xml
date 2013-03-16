@@ -20,16 +20,15 @@ pdf2xml - extract text from PDF files and wraps it in XML
  -l lexicon ..... provide a list of words or a text in the target language
  -L ............. skip lowercasing (which is switched on by default)
  -m ............. skip merging character sequences (not recommended)
- -r ............. skip 'pdftotext -raw' (not recommended)
+ -r ............. skip 'pdftotext -raw'
  -x ............. skip standard 'pdftotext'
- -X ............. use pdfXtk to convert to XHTML
+ -X ............. use pdfXtk to convert to XHTML (default)
+ -T ............. use Apache Tika for the basic conversion
  -v ............. verbose output
 
 =head1 DESCRIPTION
 
-pdf2xml calls pdftotext and Apache Tika to extract text from PDf files and to convert them to XML (actually XHTML). It also uses some heuristics to find words that should not be split into character sequences (which often happens with pdf-text extraction tools) and it also tries to put hyphenated words together.
-
-Example: raw is without cleanup heuristics
+pdf2xml tries to combine the output of several conversion tools in order to improve the extraction of text from PDF documents. Currently, it uses pdftotext, Apache Tika and pdfxtk. In the default mode, it calls all tools to extract text and pdfxtk is used to create the basic XML file that will be used to produce the final output. Several post-processing heuristics are implemented to split and merge character sequences in order to cleanup the text. Consider the example given below:
 
   raw:    <p>PRESENTATION ET R A P P E L DES PRINCIPAUX RESULTATS 9</p>
   clean:  <p>PRESENTATION ET RAPPEL DES PRINCIPAUX RESULTATS 9</p>
@@ -81,9 +80,9 @@ use File::Temp qw /tempfile/;
 
 
 use vars qw($opt_c $opt_h $opt_H $opt_J $opt_L $opt_l $opt_m $opt_r 
-            $opt_x $opt_v $opt_X);
+            $opt_T $opt_x $opt_v $opt_X);
 use Getopt::Std;
-getopts('chH:J:Ll:mrxXv');
+getopts('chH:J:Ll:mrTxXv');
 
 # home of shared data (where Apache Tika should be)
 
@@ -195,9 +194,18 @@ my $parser = new XML::Parser( Handlers => {
     End     => \&xml_end } );
 
 
+
 # use pdfxtk or Apache Tika (default)
 
-if ($opt_X){
+if ($opt_T){
+    my $pid = open2(\*OUT, undef, $JAVA,'-Xmx'.$JAVA_HEAP_SIZE,
+		    '-jar',$TIKA,'-x',$pdf_file);
+    $parser->parse(*OUT);
+    # close(OUT);
+    # waitpid( $pid, 0 );
+}
+else{
+# if ($opt_X){
     my $out_file = &run_pdfxtk($pdf_file);
     open OUT,"<$out_file" || die "cannot read from pdfxtkoutput ($out_file)\n";
     binmode(OUT,":encoding(UTF-8)");
@@ -209,14 +217,10 @@ if ($opt_X){
     }
     close OUT;
 }
-else{
-    my $pid = open2(\*OUT, undef, $JAVA,'-Xmx'.$JAVA_HEAP_SIZE,
-		    '-jar',$TIKA,'-x',$pdf_file);
-    $parser->parse(*OUT);
-    # close(OUT);
-    # waitpid( $pid, 0 );
-}
 
+
+# Done!
+##########################
 
 
 
@@ -544,7 +548,7 @@ sub find_words_pdfxtk{
     }
 
     foreach (0..$#words){
-	if ($words[$_]=~/\-/){
+	if ($words[$_]=~/.\-./){
 	    my $str = $words[$_];
 	    $str=~s/\-//g;
 	    my $lc_str = $opt_L ? $str : lc($str);

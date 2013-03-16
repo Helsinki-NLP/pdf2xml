@@ -7,56 +7,20 @@ use FindBin qw( $Bin );
 use Test::More;
 use File::Compare;
 
-my $PDF2XML = $Bin.'/../pdf2xml';
-my $POPPLER = `pdftotext --help 2>&1 | grep -i 'poppler'`;
-
-# the following tests only work if pdftotext is available
-
-if ($POPPLER=~/poppler/i){
-    system("$Bin/../pdf2xml $Bin/french.pdf > output.xml 2>/dev/null");
-    is( my_compare( "output.xml", "$Bin/french.xml" ),0, "pdf2xml (standard)" );
-
-    system("$Bin/../pdf2xml -h $Bin/french.pdf > output.xml 2>/dev/null");
-    is( my_compare( "output.xml", "$Bin/french.hyphenated.xml" ),0, "pdf2xml (keep hyphenation)" );
-
-#    system("$Bin/../pdf2xml -r $Bin/french.pdf > output.xml 2>/dev/null");
-#    is( my_compare( "output.xml", "$Bin/french.skip-pdftotext-raw.xml" ),0, 
-#        "pdf2xml (skip pdftotext raw)" );
-
-    system("$Bin/../pdf2xml -x $Bin/french.pdf > output.xml 2>/dev/null");
-    is( my_compare( "output.xml", "$Bin/french.skip-pdftotext-standard.xml" ),0, "pdf2xml (skip pdftotext standard)" );
-
-    system("$Bin/../pdf2xml -l $Bin/word-list.txt $Bin/french.pdf > output.xml 2>/dev/null");
-    is( my_compare( "output.xml", "$Bin/french.voc.xml" ),0, "pdf2xml (use word list)" );
-
-#    system("$Bin/../pdf2xml -L $Bin/french.pdf > output.xml 2>/dev/null");
-#    is( my_compare( "output.xml", "$Bin/french.skip-lowercasing.xml" ),0, 
-#	"pdf2xml (skip lowercasing)" );
-
-}
-else{
-    system("$Bin/../pdf2xml $Bin/french.pdf > output.xml 2>/dev/null");
-    is( my_compare( "output.xml", "$Bin/french.tika.xml" ),0, "pdf2xml (standard)" );
-
-    system("$Bin/../pdf2xml -h $Bin/french.pdf > output.xml 2>/dev/null");
-    is( my_compare( "output.xml", "$Bin/french.tika-hyphenated.xml" ),0, "pdf2xml (keep hyphenation)" );
-}
-
-
 system("$Bin/../pdf2xml -r -x $Bin/french.pdf > output.xml 2>/dev/null");
-is( my_compare( "output.xml", "$Bin/french.skip-pdftotext.xml" ),0, "pdf2xml (skip pdftotext)" );
+is( my_compare( "output.xml", "$Bin/data/french.pdfxtk.xml" ),0, "pdf2xml (pdfxtk)" );
 
-system("$Bin/../pdf2xml -m -r -x $Bin/french.pdf > output.xml 2>/dev/null");
-is( my_compare( "output.xml", "$Bin/french.dehyphenated.xml" ),0, "pdf2xml (de-hyphenate only)" );
+system("$Bin/../pdf2xml -r -x -T $Bin/french.pdf > output.xml 2>/dev/null");
+is( my_compare( "output.xml", "$Bin/data/french.tika.xml" ),0, "pdf2xml (Apache Tika)" );
 
-system("$Bin/../pdf2xml -h -m -r -x $Bin/french.pdf > output.xml 2>/dev/null");
-is( my_compare( "output.xml", "$Bin/french.raw.xml" ),0, "pdf2xml (raw Apache Tika)" );
+system("$Bin/../pdf2xml -r -x -m -T -l $Bin/word-list.txt $Bin/french.pdf > output.xml 2>/dev/null");
+is( my_compare( "output.xml", "$Bin/data/french.voc.xml" ),0, "pdf2xml (wordlist)" );
 
+system("$Bin/../pdf2xml -r -x -m -T $Bin/french.pdf > output.xml 2>/dev/null");
+is( my_compare( "output.xml", "$Bin/data/french.dehyphenated.xml" ),0, "pdf2xml (skip merge)" );
 
-# the test with pdfxtk cannot work on all systems because it depends on whether pdftotext exists
-
-# system("$Bin/../pdf2xml -X $Bin/french.pdf > output.xml 2>/dev/null");
-# is( my_compare( "output.xml", "$Bin/french.pdfxtk.xml" ),0, "pdf2xml (pdfXtk)" );
+system("$Bin/../pdf2xml -r -x -m -h -T $Bin/french.pdf > output.xml 2>/dev/null");
+is( my_compare( "output.xml", "$Bin/data/french.raw.xml" ),0, "pdf2xml (raw)" );
 
 
 # cleanup ....

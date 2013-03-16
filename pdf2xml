@@ -522,6 +522,7 @@ sub find_words_pdfxtk{
     # TODO: 'ffi' can also become 'i' (example: Effizienz --> Eiizienz)
     $ligatures{'l'} = 'fl';
     $ligatures{'i'} = 'fi';
+    $ligatures{'f'} = 'ff';
 
     my @words = ();
     my @tokens = split(/\s+/,$string);

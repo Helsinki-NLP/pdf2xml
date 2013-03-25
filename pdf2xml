@@ -607,6 +607,7 @@ sub find_words_pdfxtk{
 	@tokens = split(/\s+/,$string);
     }
     else{
+	# return find_words_charlevel($string);
 	@tokens = find_words_charlevel($string);
     }
 
@@ -687,6 +688,10 @@ WORD:    while ($i<$#words){
     }
 
     foreach my $i (0..$#clean){
+
+	# don't do it with single letters!
+	next if (length($clean[$i]) < 2);
+
 	my $this = $clean[$i];
 	$this = lc($this) unless ($opt_L);
 

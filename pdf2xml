@@ -644,16 +644,16 @@ WORD:    while ($i<$#words){
 	$this = lc($this) unless ($opt_L);
 	$next = lc($next) unless ($opt_L);
 
-	# dehyphenate if necessary
-	if ($this=~/^(.+)-/){
-	    if (exists $voc{$1.$next}){
-		$words[$i]=~s/\-$//;
-		push(@clean,$words[$i].$words[$i+1]);
-		print STDERR "merge $words[$i]+$words[$i+1]\n" if ($opt_v);
-		$i+=2;
-		next;
-	    }
-	}
+	# # dehyphenate if necessary
+	# if ($this=~/^(.+)-/){
+	#     if (exists $voc{$1.$next}){
+	# 	$words[$i]=~s/\-$//;
+	# 	push(@clean,$words[$i].$words[$i+1]);
+	# 	print STDERR "merge $words[$i]+$words[$i+1]\n" if ($opt_v);
+	# 	$i+=2;
+	# 	next;
+	#     }
+	# }
 
 	# if either this or the next word does not exist in the vocabulary:
 	if (! exists $voc{$this} || ! exists $voc{$next} ){

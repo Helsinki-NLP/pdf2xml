@@ -153,6 +153,7 @@ binmode(STDERR,":encoding(UTF-8)");
 
 # the vocabulary hash
 my %voc=();
+my %lm=();
 
 if ($opt_l){
     &read_vocabulary(\%voc,$opt_l);
@@ -160,20 +161,22 @@ if ($opt_l){
 
 unless ($opt_r || ( ! -e $PDF2TEXT ) ){
     &run_pdftotext_raw($pdf_file,\%voc);
+    &make_lm(\%voc,\%lm);
 }
 $LONGEST_WORD = longest_word(\%voc);
 
 unless ($opt_x){
     &run_pdftotext($pdf_file,\%voc);
+    &make_lm(\%voc,\%lm);
 }
 # run even Apache Tika (unless run_pdftotext does it already)
 if ( -e $PDF2TEXT || $opt_x ){
     &run_tika($pdf_file,\%voc);
+    &make_lm(\%voc,\%lm);
 }
 
 
 $LONGEST_WORD = longest_word(\%voc);
-
 
 #-------------------------------------------------------
 # use Apache Tika or pdfxtk to produce XHTML output
@@ -421,6 +424,13 @@ sub run_tika{
 
 
 
+##########################################################################
+#### this is a greedy left-to-right search for the longest known words
+#### ---> this easily leads to many mistakes
+#### ---> better use the find_segment LM-based method 
+####      and its dynamic programming procedure
+##########################################################################
+
 
 # find the longest known words in a string
 #
@@ -482,6 +492,71 @@ sub find_longest_words{
 }
 
 
+#
+# find segments that best match our simple unigram language model
+#
+
+
+sub find_segments{
+    my @tokens = @_;
+    return @tokens if ($opt_m);          # skip ....
+
+    # max number of tokens to be considered
+    my $LENGTH_THR = $LONGEST_WORD || length(join('',@tokens));
+
+    unshift(@tokens,'START');
+
+    my @scores = ();
+    my @trace = ();
+    for my $i (0..$#tokens){
+	for my $j ($i+1..$i+$LENGTH_THR){
+	    last if ( $j > $#tokens );
+	    my @current = @tokens[$i+1..$j];
+	    my $str = join('',@current);
+	    $str = lc($str) unless ($opt_L);
+	    $str = &try_dehyphenation($str);
+
+	    # stop if the length is longer than the longest known word
+	    last if ( length($str) > $LENGTH_THR );
+
+	    # skip if str is not known (and not a single character)
+	    next unless (exists($lm{$str}) || $#current == 0);
+
+	    # unigram probability (or unknown word prob)
+	    my $prob = exists($lm{$str}) ? $lm{$str} : $lm{__unknown__};
+	    my $start_score = $i ? $scores[$i] : 0;
+	    if (exists $scores[$j]){
+		if ( $start_score + $prob > $scores[$j] ){
+		    $scores[$j] = $start_score + $prob;
+		    $trace[$j] = $i;
+		}
+	    }
+	    else{
+		$scores[$j] = $start_score + $prob;
+		$trace[$j] = $i;
+	    }
+	}
+    }
+
+    my @words;
+    my $i=$#tokens;
+    # print STDERR "best LM score = $scores[$i]\n" if ($scores[$i] && $opt_v);
+
+    while ($i > 0){
+	my @current = @tokens[$trace[$i]+1..$i];
+	my $str = join('',@current);
+	if ($opt_v){
+	    if ($i > $trace[$i]+1){
+		print STDERR join(' ',@current)," --> $str\n";
+	    }
+	}
+	$str = &try_dehyphenation($str);
+	unshift(@words,$str);
+	$i = $trace[$i];
+    }
+    return @words;
+}
+
 
 
 sub find_words{
@@ -498,12 +573,14 @@ sub find_words{
 
 sub find_words_standard{
     $_[0]=~s/^\s*//;
-    return find_longest_words( split(/\s+/,$_[0]) );
+    return find_segments( split(/\s+/,$_[0]) );
+    # return find_longest_words( split(/\s+/,$_[0]) );
 }
 
 sub find_words_charlevel{
     $_[0]=~s/^\s*//;
-    return find_longest_words( split(//,$_[0]) );
+    return find_segments( split(//,$_[0]) );
+    # return find_longest_words( split(//,$_[0]) );
 }
 
 
@@ -512,10 +589,6 @@ sub find_words_charlevel{
 sub find_words_pdfxtk{
     my $string = shift;
     $string=~s/^\s*//;
-
-    unless ($string=~/\s/){
-	return find_words_charlevel($string);
-    }
     
     my %ligatures = ();
     foreach (values %LIGATURES){
@@ -529,7 +602,13 @@ sub find_words_pdfxtk{
     $ligatures{'f'} = 'ff';
 
     my @words = ();
-    my @tokens = split(/\s+/,$string);
+    my @tokens = ();
+    if ($string=~/\s/){
+	@tokens = split(/\s+/,$string);
+    }
+    else{
+	@tokens = find_words_charlevel($string);
+    }
 
     foreach (@tokens){
 
@@ -548,14 +627,7 @@ sub find_words_pdfxtk{
     }
 
     foreach (0..$#words){
-	if ($words[$_]=~/.\-./){
-	    my $str = $words[$_];
-	    $str=~s/\-//g;
-	    my $lc_str = $opt_L ? $str : lc($str);
-	    if (exists $voc{$lc_str}){
-		$words[$_]=$str;
-	    }
-	}
+	$words[$_] = &try_dehyphenation($words[$_]);
     }
 
     # more post-processing: merge words if necessary
@@ -571,6 +643,17 @@ WORD:    while ($i<$#words){
 	$this = lc($this) unless ($opt_L);
 	$next = lc($next) unless ($opt_L);
 
+	# dehyphenate if necessary
+	if ($this=~/^(.+)-/){
+	    if (exists $voc{$1.$next}){
+		$words[$i]=~s/\-$//;
+		push(@clean,$words[$i].$words[$i+1]);
+		print STDERR "merge $words[$i]+$words[$i+1]\n" if ($opt_v);
+		$i+=2;
+		next;
+	    }
+	}
+
 	# if either this or the next word does not exist in the vocabulary:
 	if (! exists $voc{$this} || ! exists $voc{$next} ){
 
@@ -581,7 +664,6 @@ WORD:    while ($i<$#words){
 		$i+=2;
 		next;
 	    }
-
 	    # check if pdfxtk swallowed ligatures such as 'ff' and 'fi'
 	    else{
 		foreach my $l (sort {length($b) <=> length($a)} 
@@ -661,5 +743,38 @@ sub longest_word{
     }
     return $len;
 }
+
+# make a simple unigram LM
+
+sub make_lm{
+    my $voc=shift;
+    my $lm=shift;
+
+    %{$lm} = %{$voc};
+    my $total=0.1;
+    map ($total+=$$lm{$_},keys %{$lm});
+    map ($$lm{$_} = log($$lm{$_}) - log($total), keys %{$lm});
+    $$lm{__unknown__} = log(0.1) - log($total);
+}
+
+sub dehyphenate{
+    my ($part1,$part2)=@_;
+    $part1=~s/\-$//;
+    return $part1.$part2;
+}
+
+sub try_dehyphenation{
+    my $word=shift;
+    if ($word=~/.\-./){
+	my $str = $word;
+	$str=~s/\-//g;
+	my $lc_str = $opt_L ? $str : lcfirst($str);
+	if (exists $voc{$lc_str}){
+	    $word=$str;
+	}
+    }
+    return $word;
+}
+
 
 __END__

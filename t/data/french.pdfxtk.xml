@@ -113,7 +113,7 @@
   <p>12</p>
   <p>9</p>
   <p>Tcal</p>
-  <p>téracalorie(s) (- 10</p>
+  <p>téracalorie(s) (10 10</p>
   <p>calories = 10</p>
   <p>Kcal)</p>
   <p>Kcal</p>
@@ -149,7 +149,7 @@
   <p>Si la chaleur est en effet fournie essentiellement par utilisation de combustibles au sein même des entreprises (soit directement dans des fours, soit par l'intermédiaire de vapeur ou d'autres fluides thermiques, l'énergie électrique consommée,par contre, provient le plus souvent des réseaux des distributeurs publics.</p>
   <p>Il existe cependant une autoproduction - ou production autonome - d'électricité par les établissements industriels, représentant selon les pays de 10 à 30 % de la consommation totale.</p>
   <p>Bien souvent, l'autoproduction d'électricité se fait sous la forme d'une production mixte électricité-vapeur.</p>
-  <p>Il faut en effet globalement moins de combustibles pour produire simultanément des quantités déterminées de vapeur et d'électricité que pour les produire séparément. La coexistence des besoins chaleur et électricité ne suffit toutefois pas à justifier l'adoption de telles solutions ; pour assurer une bonne rentabilité des investissements spécifiques, il convient que les durées d'utilisation des puissances installées soient importantes et qu'il y ait bonne simultanéité des besoins thermiques et électriques.</p>
+  <p>Il faut en effet globalement moins de combustibles pour produire simultanément des quantités déterminées de vapeur et d'électricité que pour les produire séparément. La coexistence des besoins chaleur et électricité ne suffit toutefois pas à justifier l'adoption de telles solu tions ; pour assurer une bonne rentabilité des investissements spécifiques, il convient que les durées d'utilisation des puissances installées soient importantes et qu'il y ait bonne simultanéité des besoins thermiques et électriques.</p>
   <p>Sous l'effet conjugué de différents facteurs (accroissement de la taille des unités de production, concentration industrielle, évolution des technologies de fabrication avec un appel accru à la chaleur et au froid, etc . . .) on assiste depuis quelques années à un développement d'installations de chaleur-force de grande puissance utilisant soit des turbines à contre-pression, soit des turbines à gaz.</p>
   <p>La hausse récente du coût de l'énergie primaire va modifier les caractéristiques des marchés de la production autonome "classique" fondée sur l'utilisation des combustibles traditionnels. Jusqu'à la crise de 1973 en effet, le rapport de prix privilégiait généralement ces combustibles au détriment de l'énergie électrique.</p>
   <h2>Page 12</h2>
@@ -175,7 +175,7 @@
   <p>r</p>
   <p>pa h</p>
   <p>14 9 (9)</p>
-  <p>t / </p>
+  <p>t / 0</p>
   <p>e</p>
   <p>100 n</p>
   <p>central</p>
@@ -187,7 +187,7 @@
   <p>17 2 0 2 0 0 0 1</p>
   <p>31 11 9 7 3 9 1 1</p>
   <p>RFA France Italie Pays Bas Belgique G.B.(2) Irlande Danemark</p>
-  <p>Dé bi</p>
+  <p>Débi</p>
   <p>total</p>
   <p>29</p>
   <p>6</p>
@@ -197,7 +197,7 @@
   <p>73</p>
   <p>r</p>
   <p>pa h</p>
-  <p>t / </p>
+  <p>t / 0</p>
   <p>10 8 8 4 3</p>
   <p>e</p>
   <p>70 n</p>
@@ -208,9 +208,9 @@
   <p>25 4 0 3 0 0 0 3</p>
   <p>20 13 13 7 4 13 1 1</p>
   <p>45 17 13 10 4 13 1 4</p>
-  <p>RFA France [talie Pays Bas Belgique G.B.(2) Irlande Danemark</p>
+  <p>RFA France [talie Pays Bas Belgique G.B. (2) Irlande Danemark</p>
   <p>t m oy e</p>
-  <p>Dé bi</p>
+  <p>Débi</p>
   <p>total</p>
   <p>40</p>
   <p>8</p>
@@ -520,7 +520,7 @@
   <p>Pour estimer la part des besoins susceptibles d'être couverts par des centrales mixtes nucléaires, on a retenu deux hypothèses extrêmes permettant de fixer les idées à titre indicatif en déterminant des bornes minimum (m) et maximum (M) :</p>
   <p>- dans l'hypothèse minimum (m), on suppose que la part du nu cléaire sera prise uniquement sur l'augmentation des besoins entre aujourd'hui (1975) et 1985 ou 1990. On détermine la part du nucléaire en multipliant cette augmentation des besoins par le coefficient de concentration géographique.</p>
   <p>Cette hypothèse minimum correspond au cas où aucune mesure ne permettrait d'augmenter la concentration géographique des établissements consommateurs de vapeur.</p>
-  <p>- dans l'hypothèse maximum (M), on suppose que la part du nucléaire serait prise sur l'augmentation des besoins entre 1975 et 1985 ou 1990 ainsi que sur 50 % des besoins actuels (en tenant compte des coefficients de concentration géographique). Ce coefficient de 50 % est une moyenne. Dans la réalité, ii doit être plus élevé pour la chimie mais plus faible pour les aut-es industries (1).</p>
+  <p>- dans l'hypothèse maximum (M), on suppose que la part du nucléaire serait prise sur l'augmentation des besoins entre 1975 et 1985 ou 1990 ainsi que sur 50 % des besoins actuels (en tenant compte des coefficients de concentration géographique). Ce coefficient de 50 % est une moyenne. Dans la réalité, ii doit être plus élevé pour la chimie mais plus faible pour les aut-esindustries (1).</p>
   <p>Cette hypothèse maximum correspond au cas :</p>
   <p>. où des mesures ou incitations d'aménagement du territoire parviendraient à augmenter la concentration géographique des établissements consommateurs de vapeur,</p>
   <p>. et où les sociétés distributrices d'électricité accepteraient, avec les mêmes puissances nucléaires, de produire un pou moins d'électricité.</p>
@@ -636,7 +636,7 @@
   <p>- une hypothèse basse : où les obstacles qui tendent à freiner le développement du chauffage urbain l'emportent sur les incitations éventuelles. Nous avons supposé dans ce cas que la part du chauffage urbain dans les besoins du secteur domestique resterait stable jusqu'en 1990. Il en résulte que dans l'hypothèse basse, le chauffage urbain se développe au même rythme que les besoins totaux en chauffage du secteur domestique et tertiaire.</p>
   <p>- une hypothèse haute dans laquelle en 1990 la part du chauffage urbain serait multipliée par 3 et assurerait 9 % des besoins globaux.</p>
   <p>Cette hypothèse peut être considérée comme la plus optimiste actuellement ; elle implique un taux de croissance de 1 0 à 1 1 % des livraisons de chauleur aux abonnés du chauffage urbain.</p>
-  <p>De 65,6 milliers de Tcal en 1972, les livraisons de chaleur aux réseaux de chauffage urbain passeraient en 1990 à : - 73 milliers de Tcal dans l'hypothèse basse, - 218 milliers de Tcal dans l'hypothèse haute.</p>
+  <p>De 65, 6 milliers de Tcal en 1972, les livraisons de chaleur aux réseaux de chauffage urbain passeraient en 1990 à : - 73 milliers de Tcal dans l'hypothèse basse, - 218 milliers de Tcal dans l'hypothèse haute.</p>
   <p>2.2. Estimation de la part maximale du nucléaire pour le chauffage urbain</p>
   <p>On a procédé à un examen ville par ville tenant compte de deux critères : l'importance de la population d'une part, la taille du réseau actuel de chauffage urbain d'autre part.</p>
   <p>34</p>
@@ -801,7 +801,7 @@
   <p>4</p>
   <p>O ­H</p>
   <p>r­ rt</p>
-  <p>G.B.(2) (2)</p>
+  <p>G.B. (2)</p>
   <p>7</p>
   <p>0</p>
   <p>7</p>
@@ -870,7 +870,7 @@
   <p>La plupart des industriels - et notamment ceux qui ont été interrogés au cours de l'enquête - sont conscients des avantages liés à la production mixte et la pratiquent lorsque l'intérêt économique le justifie.</p>
   <p>Cette solution est en effet intéressante sur le plan du rendement global des installations. Par contre, son intérêt sur le plan économique peut être limité et dépend d'un certain nombre de facteurs dont les plus significatifs sont le montant des investissements, les frais d'exploitation et en particulier le coût du combustible, ainsi que le coût de l'énergie électrique auto-produite dont la valeur est liée à la tarification du distributeur d'électricité.</p>
   <p>C'est ainsi que, dans les conditions économiques actuelles, les installations de production mixte ne sont pas toujours rentables au niveau de l'industriel et que certaines unités existantes ont été ralenties au minimum compatible avec le fonctionnement des installations, ou même arrêtées. Par exemple, l'un des industriels rencontrés, la Société Bowater-Scott, a renoncé à autoproduire son électricité dans ses unités de Northfleet et de Barrow in Furness en raison du coût trop élevé des turbines à vapeur ou à gaz.</p>
-  <p>Par contre le problème n'est pas ressenti de la même façon au niveau de la collectivité nationale, dans la mesure où un gain sur le rendement d'une installation se traduit, de toutes façons, par une économie de combustibles.</p>
+  <p>Par contre le problème n'est pas ressenti de la même façon au niveau de la collectivité nationale, dans la mesure où un gain sur le ren dement d'une installation se traduit, de toutes façons, par une économie de combustibles.</p>
   <p>2. LE REGROUPEMENT DES BESOINS</p>
   <p>Il s'agit ici des obstacles au regroupement des besoins en énergie, indépendamment de la solution adoptée (nucléaire ou classique) pour fournir l'énergie.</p>
   <p>2. 1. Nécessité du regroupement</p>
@@ -935,7 +935,7 @@
   <p>46</p>
   <h2>Page 49</h2>
   <p>3. LES OBSTACLES A LA SOLUTION NUCLEAIRE</p>
-  <p>A supposer que les obstacles précédents soient levés, et que l'on parvienne à concentrer sur des aires géographiques très limitées des besoins énergétiques suffisants, pouvant être mis en commun, il resterait encore à surmonter des difficultés liées au caractère nucléaire de la solution que l'on désire adopter.</p>
+  <p>A supposer que les obstacles précédents soient levés, et que l'on parvienne à concentrer sur des aires géographiques très limitées des besoins énergétiques suffisants, pouvant être mis en commun, il resterait encore à surmonter des difficultés liées au caractère nucléaire de la solu tion que l'on désire adopter.</p>
   <p>3. l.Les délais de construction</p>
   <p>Les délais de construction des centales mixtes sont compris entre 5 et 7 ans en cas de solutions nucléaire et de l'ordre de 2 ans en cas de solution classique (quatre ans au maximum pour des unités de très grande dimension).</p>
   <p>On pourrait penser que ces délais sont trop longs pour les indus triels (1) qui décident la construction d'une nouvelle unité. Mais ce problème peut être résolu car un équipement classique peut être installé et servir, dans une première phase, de relais en attendant le fonctionnement de la centrale nucléaire et, dans une seconde phase, à assurer le secours du nucléaire.</p>
@@ -951,7 +951,7 @@
   <p>Certains industriels envisagent également que le secours soit assuré par du nucléaire ce qui implique, si l'énergie consommée sur le site le justifie (l), l'installation de plusieurs centrales de 1 000 MWth les arrêts programmés pour rechargement du combustible étant décalés les uns par rapport aux autres. Quelques personnes rencontrées pensent que le problème du secours constitue un argument en faveur des centrales nucléaires de puissance inférieure à 1 000 MWth (2) par exemple 100 à 300 MWth). D'autres pensent que le coût de l'équipement de secours constitue un argument en faveur d'une solution publique (et à l'encontre d'une solution privée par conséquent).</p>
   <p>En fait les études économiques montrent qu'il est parfois intéressant de construire, sur un même site, au moins deux unités nucléaires. A moins d'envisager effectivement l'installation de centrales de petite puissance, le seuil de rentabilité d'un projet ne sera atteint que pour une consommation d'énergie importante, c'est-à-dire dans le cadre d'un regroupement d'un grand nombre de consommateurs.</p>
   <p>3. 3. L'importance des investissements des centrales nucléaires</p>
-  <p>Disposant de capacités de financement en général limitées, les industriels donnent la priorité aux investissements de production, les moyens généraux passant au second plan, sauf pour certaines industries grosses consommatrices d'énergie. Aussi, certains d'entre eux sont-ils effrayés par l'importance du coût de la construction d'une centrale nucléaire (de l'ordre de 700 à 1 000 millions de francs français pour une centrale mixte de 1 000 MWth (3) et par la durée d'amortissement.</p>
+  <p>Disposant de capacités de financement en général limitées, les industriels donnent la priorité aux investissements de production, les moyens généraux passant au second plan, sauf pour certaines industries grosses consommatrices d'énergie. Aussi, certains d'entre eux sont-ilseffrayés par l'importance du coût de la construction d'une centrale nucléaire (de l'ordre de 700 à 1 000 millions de francs français pour une centrale mixte de 1 000 MWth (3) et par la durée d'amortissement.</p>
   <p>(1) il ne peut être envisagé, en raison de l'importance des investissements, de disposer, à l'échelle d'un site industriel, d'une centrale nucléaire de réserve (c'est-à-dire ne fonctionnant qu'en cas d'indisponibilité, programmée ou non). (2) Des recherches sont d'ailleurs effectuées dans ce sens, même pour des centrales uniquement calogènes (pour le chauffage urbain en Suède par exemple). (3) Le coût de construction d'une tranche nucléaire uniquement électrogène de 1 000 MWe (3 000 MWth) est estimé à 1 500 millions de francs français.</p>
   <p>48</p>
   <h2>Page 51</h2>
@@ -983,7 +983,7 @@
   <p>- nécessité de prendre des engagements de nature différente vis-à-vis de la clientèle.</p>
   <p>Cependant, les sociétés de distribution allemandes, françaises ou italiennes (l) ont entrepris des études sur l'intérêt pour elles de produire et vendre de la vapeur : elles sont donc sensibilisées auproblème (ce qui ne signifie pas qu'elles soient convaincues qu'il va de leur intérêt de construire des centrales mixtes nucléaires ... ).</p>
   <p>Le problème de monopole et de tarification</p>
-  <p>La tarification pratiquée par les distributeurs d'électricité a une grande incidence sur la rentabilité des projets. En effet, si la structure des prix est telle que les prix de vente sont inférieurs aux coûts réels de production, une solution privée avec autoproduction d'électricité peut s'avérer moins rentable qu'une solution avec achat aux distributeurs publics.</p>
+  <p>La tarification pratiquée par les distributeurs d'électricité a une grande incidence sur la rentabilité des projets. En effet, si la structure des prix est telle que les prix de vente sont inférieurs aux coûts réels de production, une solution privée avec autoproduction d'électricité peut s'avérer moins rentable qu'une solu tion avec achat aux distributeurs publics.</p>
   <p>A l'inverse, si les prix de vente sont plus élevés, l'autoproduction peut devenir rentable. Les chimistes allemands par exemple aimeraient, pour cette raison, construire des centrales mixtes nucléaires communes à plusieurs sociétés ; mais le monopole des sociétés distributrices s'y oppose.</p>
   <p>Si la vapeur est vendue trop chère, les industriels préfèrent l'auto-produire, au besoin avec des moyens classiques si on leur interdit l'autoproduction commune.</p>
   <p>En vue de diminuer les importations de pétrole des états membres grâce à l'installation de centrales mixtes, une politique plus souple de la part des sociétés de distribution d'électricité serait souhaitable, de façon à supprimer le dilemme "interdiction de l'autoproduction commune/tarification trop élevée" qui a pour effet que chaque utilisateur préfère produire sa propre vapeur, au détriment de l'intérêt général.</p>
@@ -996,7 +996,7 @@
   <p>3. 5. Attitude de la population résidente et de la population active</p>
   <p>La quasi totalité des industriels rencontrés prévoient des réactions négatives de la part de la population ou des travailleurs. Il paraît difficile d'installer une centrale nucléaire là ou des gens vivent ou travaillent (1). La peur du nucléaire aura peut être disparu dans 20 ans mais sûremant pas dans cinq ans. Le problème des déchets radioactifs, de la pollution, de la sécurité, paraissent particulièrement graves et préoccupants. Tout danger (d'explosion, de fuite . . . ) doit être absolument écarté pour que le personnel accepte de travailler à proximité d'une centrale nucléaire.</p>
   <p>Une difficulté importante provient du fait que les industries chi miques (qui jouent le rôle moteur) recèlent des dangers pour les cen trales. On a calculé, par exemple, au service de sûreté nucléaire français, qu'il fallait une distance minimale de sécurité de 4 km pour le méthane. Pour les gaz plus lourds comme l'éthylène, ce doit être encore plus sévère ; en effet, plus les gaz inflamm ables sont lourds plus ils sont dangereux car, en cas de fuite, ils forment des poches aux déplacements imprévisibles.</p>
-  <p>Les réactions que l'on peut attendre de la population constituent un obstacle qui apparaît difficile à surmonter actuellement surtout à l'encontre de centrales privées qui n'apporteront pas aux collectivités locales concernées des ressources financières aussi élevées que les centrales publiques. Les mouvements de protection de l'environnement et de lutte contre la pollution sont très forts. Les craintes ressenties par la population vis-à-vis des centrales nucléaires aboutissent, ou aboutiront, à exercer une pression sur les autorités chargées de donner les autorisations de construire les centrales (cas de la centrale BASF à Ludwigshafen). Certains industriels proposent que des campagnes</p>
+  <p>Les réactions que l'on peut attendre de la population constituent un obstacle qui apparaît difficile à surmonter actuellement surtout à l'encontre de centrales privées qui n'apporteront pas aux collectivités locales concernées des ressources financières aussi élevées que les centrales publiques. Les mouvements de protection de l'environnement et de lutte contre la pollution sont très forts. Les craintes ressenties par la population vis-à-vis des centrales nucléaires aboutissent, ou aboutiront, à exercer une pression sur les autorités chargées de donner les autorisations de construire les centrales (cas de la centrale BASF à Ludwigshafen) . Certains industriels proposent que des campagnes</p>
   <p>(1) cela est particulièrement marqué en Grande-Bretagne.</p>
   <p>52</p>
   <h2>Page 55</h2>
@@ -1550,7 +1550,7 @@
   <p>- Liste des villes susceptibles d'être équipées de chauffage urbain d'origine nucléaire (Suite)</p>
   <p>Hypothèse basse</p>
   <p>Pays</p>
-  <p>Hypothèse haute</p>
+  <p>Hypothè se haute</p>
   <p>VILLES</p>
   <p>Puissance calorifique en 1973 en Gcal/h cal/h</p>
   <p>1980</p>
@@ -1625,7 +1625,7 @@
   <p>1. INTRODUCTION</p>
   <p>On s'est attaché dans cette partie de l'étude à estimer les conséquences économiques, au niveau de chaque pays, de la réalisation de centrales mixtes nucléaires pour couvrir une partie des besoins énergétiques de l'industrie et du chauffage urbain.</p>
   <p>Parmi l'ensemble des facteurs significatifs, on a retenu plus particulièrement pour l'analyse deux d'entre eux .</p>
-  <p>Il s'agit des économies de combustible d'une part, des su p - p l ément s d'investissements d'autre part :</p>
+  <p>Il s'agit des économies de combustible d'une part, des suppléments d'investissements d'autre part :</p>
   <p>a) La production de vapeur à partir de centrales nucléaires entraînera en effet une économie de combustibles classiques. Il s'agit, en proportions différentes selon les pays, de combustibles solides (charbon), gazeux ou liquides (fuel). Les économies de fuel sont particulièrement intéressantes: elles permettent de diminuer les importations de pétrole brut et d'améliorer ainsi les balances des paiements.</p>
   <p>b) En contrepartie, la construction de centrales mixtes nucléaires conduira à des charges financières d'investissement plus importantes. On cherchera à chiffrer les suppléments d'investissements entraînés par la solution "nucléaire" et à les comparer aux principaux indicateurs de la Comptabilité Nationale (Produit National Brut, formation brute de capital fixe).</p>
   <p>2. LES ECONOMIES DE COMBUSTIBLES CLASSIQUES</p>
@@ -1793,7 +1793,7 @@
   <p>2 500 heures annuelles. (3) Si on suppose que tous les combustibles classiques économisés entraî­nent une diminution des importations de produits pétroliers (100 % au lieu de 54 à 82 %) la diminution annuelle peut atteindre 33 millions de tonnes de pétrole.</p>
   <p>70</p>
   <h2>Page 73</h2>
-  <p>En fait, le problème se situe au niveau du pétrole brut, normalement importé, et non au niveau du fuel, produit issu du raffinage. On supposera que l'économie d'une tonne de fuel entraînera l'économie d'une tonne de pétrole brut. Cela implique une modification des raffineries (installation d'unités "de conversion") pour produire une plus grande proportion de produits légers. Il s'agit en fait d'une évolution inéluctable compte tenu des bouleversements qu'entraînera le développement de la production d'électricité d'origine nucléaire.</p>
+  <p>En fait, le problème se situe au niveau du pétrole brut, normalement importé, et non au niveau du fuel, produit issu du raffinage. On supposera que l'économie d'une tonne de fuel entraînera l'économie d'une tonne de pétrole brut. Cela implique une modification des raffineries (installation d'unités "de conversion") pour produire une plus grande proportion de produits légers. Il s'agit en fait d'une évolu tion inéluctable compte tenu des bouleversements qu'entraînera le développement de la production d'électricité d'origine nucléaire.</p>
   <p>En avenir incertain, il est difficile de préciser ce que pourrait être le prix du pétrole en 1990. Différents scénarios pourraient être envisagés prenant en considération en particulier des éléments de nature politique. A titre indicatif, et pour donner des ordres de grandeur de l'incidence des économies de pétrole brut sur les balances des paiements de chaque pays en 1990, on s'est contenté d'appliquer le taux actuel (mai 1975) de 82 dollars la tonne.</p>
   <p>Les économies annuelles pour les neuf paye de la C. E. seraient alors de 600 à 1 700 millions d'EUR (soit 3, 1 à 8, 9 milliards de francs français actuels ou 800 à 2 200 millions de $ actuels).</p>
   <p>Il est intéressant de comparer l'ordre de grandeur :</p>
@@ -1923,7 +1923,7 @@
   <p>En fait, pour le calcul, on est conduit à prendre en compte des ratios de coût par MWe installé en classique ou en nucléaire, ou par t/h de vapeur d'origine classique (1) puis à les appliquer à une solution de référence équivalente en puissance à la centrale mixte nucléaire (l 000 MWth correspondant à 150 MWe et 700 t/h de vapeur).</p>
   <p>On peut ainsi procéder ensuite à des comparaisons entre les solutions de référence et la solution mixte nucléaire.</p>
   <p>3. 4. Comparaison unitaire des deux solutions</p>
-  <p>Les coûts d'investissements et les charges financières annuelles sont plus élevées dans la solution "centrale mixte nucléaire" (hypothèses de coût minimum et maximum) que dans la solution de référence (solutions 1 et 2). On a calculé les écarts extrêmes possibles entre le coût des centrales mixtes nucléaires et celui des solutions de référence.</p>
+  <p>Les coûts d'investissements et les charges financières annuelles sont plus élevées dans la solution "centrale mixte nucléaire" (hypothèses de coût minimum et maximum) que dans la solu tion de référence (solutions 1 et 2). On a calculé les écarts extrêmes possibles entre le coût des centrales mixtes nucléaires et celui des solutions de référence.</p>
   <p>Pour l'investissement, l'écart minimum est de 260 MF et l'écart maximum de 690 MF.</p>
   <p>Pour l'annuité :</p>
   <p>- l'écart minimum est de 62 MF : entre l'annuité minimum de centrale mixte nucléaire (114 MF) et l'annuité de la solution de référence 2 (52 MF),</p>
@@ -1939,7 +1939,7 @@
   <p>- Produit National Brut (PNB) - Formation Brute de Capital Fixe (FBCF).</p>
   <p>On a calculé les pourcentages des charges financières annuelles moyennes (1) en 1990 correspondant à la construction des centrales mixtes nucléaires, par rapport aux indicateurs valables pour l'année 1972.</p>
   <p>Il apparaît que pour l'ensemble de l'Europe des Neuf la</p>
-  <p></p>
+  <p>0</p>
   <p>du</p>
   <p>/ 00</p>
   <p>charge financière annuelle en 1990 représente environ 4PNB de 1972 et 16 °/0Ode la FBCF de 1972 (2).</p>
@@ -1963,8 +1963,8 @@
   <p>8284 — n° 4 (en préparation)</p>
   <p>8287- n°5 L'industrie et le marché communautaire des pâtes de bois à papier 1970,43 p. (f, d, i, n) FF 16,70; FB 150,-</p>
   <p>8332 - n"6 Systèmes à grande puissance de traitement automatique de l'information. Besoins et applications dans la Communauté européenne et au</p>
-  <p>Royaume-Uni vers les années soixante-dix 1971. 60 p. (f, d, i, n, e) FF 11,50; FB 100,-</p>
-  <p>8439 - n° 7 Enquête sur le développement du software (Rapport de synthèse) 1973,21 p. (f, d, i, n, e) FF 11,50; FB 100,-</p>
+  <p>Royaume-Uni vers les années soixante-dix1971. 60 p. (f, d, i, n, e) FF 11,50; FB 100,-</p>
+  <p>8439 - n° 7 Enquête sur le développement du software (Rapport de synthèse) 1973,21 p. (f, d, i, n, e) FF 11,50 ; FB 100,-</p>
   <p>(') Les signes abréviatifs f, d, i, n et e Indiquent les langues dans lesquelles les textes ont été publiés (français, allemand, italien, néerlandais et anglais).</p>
   <p>77</p>
   <h2>Page 80</h2>
@@ -1977,7 +1977,7 @@
   <p>Information</p>
   <p>European Community Service</p>
   <p>Beggar's Bush Dublin 4 Tel 688433</p>
-  <p>Moniteur belge — Belgisch Staatsblad Rue de Louvain 40-42 — Leuvenseweg 40-42 1000 Bruxelles - 1000 Brussel</p>
+  <p>Moniteur belge — Belgisch Staatsblad Rue de Louvain 40-42 — Leuvenseweg 40-421000 Bruxelles - 1000 Brussel</p>
   <p>Tél. 5120026</p>
   <p>2100 M Street, N.W. Suite 707 Washington, D.C. 20037 Tel. 2965131</p>
   <p>CCP 000-2005502-27 -Postrekening 000-2005502-27</p>
@@ -1998,7 +1998,7 @@
   <p>Grand-Duché de Luxembourg</p>
   <p>JH. Schultz - Boghandel Montergade 19 1116 Kobenhavn K Girokonto 1195 Tel. 141195</p>
   <p>Office des publications officielles des Communautés européennes</p>
-  <p>2. Fredsgatan Stockholm 16 PostGiro 193, Bank Giro 73/4015</p>
+  <p>2. Fredsgatan Stockholm 16 Post Giro 193, Bank Giro 73/4015</p>
   <p>Deutschland (BR)</p>
   <p>España</p>
   <p>5, rue du Commerce Boîte postale 1003 - Luxembourg Tél. 490081 - CCP 191-90 Compte courant bancaire: BIL 8-109/6003/300</p>

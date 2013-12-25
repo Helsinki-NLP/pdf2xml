@@ -1,4 +1,7 @@
 
+
+
+- merge paragraph heuristics for putting unfinished sentences together
 - better approach for finding word boundaries based on
   a unigram LM and dynamic programming
 - better de-hyphenation in pdfxtk-mode

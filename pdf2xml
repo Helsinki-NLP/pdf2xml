@@ -20,6 +20,7 @@ pdf2xml - extract text from PDF files and wraps it in XML
  -l lexicon ..... provide a list of words or a text in the target language
  -L ............. skip lowercasing (which is switched on by default)
  -m ............. skip merging character sequences (not recommended)
+ -M ............. skip paragraph mergong heuristics
  -r ............. skip 'pdftotext -raw'
  -x ............. skip standard 'pdftotext'
  -X ............. use pdfXtk to convert to XHTML (default)
@@ -80,7 +81,7 @@ use File::Temp qw /tempfile/;
 
 
 use vars qw($opt_c $opt_h $opt_H $opt_J $opt_L $opt_l $opt_m $opt_r 
-            $opt_T $opt_x $opt_v $opt_X);
+            $opt_T $opt_x $opt_v $opt_X $opt_M);
 use Getopt::Std;
 getopts('chH:J:Ll:mrTxXv');
 
@@ -228,8 +229,16 @@ else{
 
 
 sub xml_start{ 
-    shift;
-    $writer->startTag(shift, @_);
+    my $p = shift;
+    ## delay printing paragraph boundaries
+    ## in order to merge if necessary
+    if ($opt_M || $_[0] ne 'p'){
+	if ($p->{OPEN_PARA}){
+	    $writer->endTag('p');
+	    $p->{OPEN_PARA} = 0;
+	}
+	$writer->startTag(shift, @_);
+    }
 }
 
 sub xml_end{
@@ -266,11 +275,42 @@ sub xml_end{
 	}
 
 	if (@words){
+	    ## check if there is an open paragraph
+	    ## merge heuristics: if the first word starts
+	    ##  with a lower-cased letter --> merge!
+	    ## otherwise: close previous paragraph and start a new one
+	    if ($_[0]->{OPEN_PARA}){
+		unless ($words[0]=~/^\p{Ll}/){
+		    $writer->endTag('p');
+		    $writer->startTag('p');
+		}
+		else{
+		    $writer->characters(' ');
+		}
+	    }
+	    else{
+		$writer->startTag('p');
+	    }
 	    $writer->characters( join(' ',@words) );
+	    $_[0]->{OPEN_PARA} = 1;
+	    if ($words[-1]=~/[.?!]$/){
+		$_[0]->{OPEN_PARA} = 0;
+	    }
+	    unless ($_[0]->{OPEN_PARA} || $opt_M){
+		$writer->endTag('p');
+	    }
 	    $_[0]->{STRING} = '';
 	}
     }
-    $writer->endTag($_[1]);
+    ## delay closing paragraphs
+    ## (in case we want to merge with previous one)
+    if ($opt_M || $_[1] ne 'p'){
+	if ($_[0]->{OPEN_PARA}){
+	    $writer->endTag('p');
+	    $_[0]->{OPEN_PARA} = 0;
+	}
+	$writer->endTag($_[1]);
+    }
 }
 
 sub xml_end_simple{

@@ -15,6 +15,7 @@ requires 'Getopt::Std' => 0;
 requires 'FindBin'     => 0;
 
 recommends 'File::ShareDir' => 0;
+recommends 'Lingua::Identify::Blacklists' => '0.04';
 
 requires_external_bin 'java';
 # pdftotext is not required anymore but recommended ....

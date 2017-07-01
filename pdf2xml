@@ -375,9 +375,33 @@ sub run_pdfxtk{
     my @jars = grep { /\.jar/ } readdir($dh);
     closedir $dh;
     my $CLASSPATH = join( ':', map { $_=$SHARED_HOME.'/lib/pdfxtk/'.$_ } @jars );
-    print STDERR "$JAVA -Xmx $JAVA_HEAP_SIZE -cp $CLASSPATH at.ac.tuwien.dbai.pdfwrap.ProcessFile $pdf_file $out_file\n";
+
+    ## need Java 1.6 openjdk
+    ## ugly way of finding java-1.6, assumes that java installed in /usr/lib/jvm
+    my $JAVA16 = $JAVA;
+    my $version = `$JAVA16 -version`;
+    if ($version!~/java version "1\.6\./){
+	my @java = glob '/usr/lib/jvm/jre-1.6.*openjdk*/bin/java';
+	unless (@java){
+	    @java = glob '/usr/lib/jvm/java-1.6.*openjdk*/bin/java';
+	    unless (@java){
+		@java = glob '/usr/lib/jvm/java-1.6.*/bin/java';
+	    }
+	}
+	if (@java){
+	    $JAVA16 = $java[0];
+	}
+	else{
+	    print STDERR "pdfxtk does not work with recent versions of Java!\n";
+	    print STDERR "It is tested with Java 1.6.0 openjdk.\n";
+	    print STDERR "Use flag -J to specify the Java version in case the script fails!\n";
+	}
+    }
+    ## ---------------------------
+
+    # print STDERR "$JAVA16 -Xmx $JAVA_HEAP_SIZE -cp $CLASSPATH at.ac.tuwien.dbai.pdfwrap.ProcessFile $pdf_file $out_file\n";
     my $pid = open2(undef, undef, 
-		    $JAVA,
+		    $JAVA16,
 		    '-Xmx'.$JAVA_HEAP_SIZE,
 		    '-cp',$CLASSPATH,
 		    'at.ac.tuwien.dbai.pdfwrap.ProcessFile',

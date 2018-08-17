@@ -1,4 +1,8 @@
 
+* v0.2.8 Fri Aug 17 10:04:58 EEST 2018
+
+- update to Apache Tika 1.18
+
 * v0.2.7 Sat Jul  1 21:25:09 EEST 2017
 
 - added an ugly workaround to find java 1.6 for pdfxtk

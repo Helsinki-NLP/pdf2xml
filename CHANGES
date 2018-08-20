@@ -2,6 +2,7 @@
 * v0.2.8 Fri Aug 17 10:04:58 EEST 2018
 
 - update to Apache Tika 1.18
+- hide warnings and error messages from external tools
 
 * v0.2.7 Sat Jul  1 21:25:09 EEST 2017
 

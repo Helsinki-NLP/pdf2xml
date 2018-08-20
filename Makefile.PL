@@ -8,7 +8,7 @@ version     '0.2.8';
 
 include     'Module::AutoInstall';
 
-requires 'IPC::Open2'  => 0;
+requires 'IPC::Open3'  => 0;
 requires 'XML::Parser' => 0;
 requires 'XML::Writer' => 0;
 requires 'Getopt::Std' => 0;

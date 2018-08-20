@@ -72,7 +72,7 @@ at your option, any later version of Perl 5 you may have available.
 use strict;
 
 use FindBin qw/$Bin/;
-use IPC::Open2;
+use IPC::Open3;
 use XML::Parser;
 use XML::Writer;
 use File::Temp qw /tempfile/;
@@ -202,7 +202,7 @@ my $parser = new XML::Parser( Handlers => {
 # use pdfxtk or Apache Tika (default)
 
 if ($opt_T){
-    my $pid = open2(\*OUT, undef, $JAVA,'-Xmx'.$JAVA_HEAP_SIZE,
+    my $pid = open3(undef, \*OUT, \*ERR, $JAVA,'-Xmx'.$JAVA_HEAP_SIZE,
 		    '-jar',$TIKA,'-x',$pdf_file);
     $parser->parse(*OUT);
     # close(OUT);
@@ -400,7 +400,7 @@ sub run_pdfxtk{
     ## ---------------------------
 
     # print STDERR "$JAVA16 -Xmx $JAVA_HEAP_SIZE -cp $CLASSPATH at.ac.tuwien.dbai.pdfwrap.ProcessFile $pdf_file $out_file\n";
-    my $pid = open2(undef, undef, 
+    my $pid = open3(undef, undef, undef, 
 		    $JAVA16,
 		    '-Xmx'.$JAVA_HEAP_SIZE,
 		    '-cp',$CLASSPATH,
@@ -417,7 +417,7 @@ sub run_pdftotext_raw{
     my $pdf_file = shift;
     my $voc = shift;
 
-    my $pid = open2(\*OUT, undef, $PDF2TEXT,'-raw','-enc','UTF-8',$pdf_file,'-');
+    my $pid = open3(undef, \*OUT, \*ERR, $PDF2TEXT,'-raw','-enc','UTF-8',$pdf_file,'-');
     binmode(OUT,":encoding(UTF-8)");
 
     my $hyphenated=undef;
@@ -453,8 +453,8 @@ sub run_pdftotext{
     my $voc = shift;
 
     my $pid = ( -e $PDF2TEXT ) ? 
-	open2(\*OUT, undef, 'pdftotext','-enc','UTF-8',$pdf_file,'-') :
-	open2(\*OUT, undef, $JAVA,'-Xmx'.$JAVA_HEAP_SIZE,
+	open3(undef, \*OUT, \*ERR, 'pdftotext','-enc','UTF-8',$pdf_file,'-') :
+	open3(undef, \*OUT, \*ERR, $JAVA,'-Xmx'.$JAVA_HEAP_SIZE,
 	      '-jar',$TIKA,'-t',$pdf_file);
 
     binmode(OUT,":encoding(UTF-8)");
@@ -489,7 +489,7 @@ sub run_tika{
     my $pdf_file = shift;
     my $voc = shift;
 
-    my $pid = open2(\*OUT, undef, $JAVA,'-Xmx'.$JAVA_HEAP_SIZE,
+    my $pid = open3(undef, \*OUT, \*ERR, $JAVA,'-Xmx'.$JAVA_HEAP_SIZE,
 		    '-jar',$TIKA,'-t',$pdf_file);
 
     binmode(OUT,":encoding(UTF-8)");

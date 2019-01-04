@@ -24,7 +24,6 @@ is( my_compare( $output, "$Bin/data/french.tika.xml" ),1, "pdf2xml (Apache Tika)
 ## this is only different if there is an Apache::Tika server running
 my $output = pdf2xml( $pdf_file,
 		      # output => 'data/french.tika.xml',
-		      use_tika_server => 1,
 		      vocabulary_from_tika => 0,
 		      vocabulary_from_pdf => 0,
 		      vocabulary_from_raw_pdf => 0 );
@@ -65,10 +64,12 @@ sub my_compare{
     $reference =~s/(\n|A)\s*/$1/sg;
     $reference =~s/\s*(\n|\Z)/$1/sg;
 
+    $output =~s/<meta name="created"[^\n]*\n//s;
     $output =~s/<meta name="resourceName"[^\n]*\n//s;
     $output =~s/<meta name="Content-Length"[^\n]*\n//s;
     $output =~s/\n[^\n]+\(U ο υ a vu Q[^\n]*\n/\n/s;
     $reference =~s/\n[^\n]+\(U ο υ a vu Q[^\n]*\n/\n/s;
+    $reference =~s/<meta name="created"[^\n]*\n//s;
 
     return $output eq $reference;
 }

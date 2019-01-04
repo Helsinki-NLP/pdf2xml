@@ -1,4 +1,11 @@
 
+* v0.2.9
+
+- moved options and functions to library
+- enable output options
+- enabled calls to Apache Tika server
+
+
 * v0.2.8 Fri Aug 17 10:04:58 EEST 2018
 
 - update to Apache Tika 1.18

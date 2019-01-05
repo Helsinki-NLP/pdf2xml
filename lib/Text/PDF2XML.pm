@@ -440,6 +440,9 @@ sub _xml_end{
 	    my $DehyphenatedStr = undef;
 
 	    if ($DEHYPHENATE){
+		if ($OriginalStr=~/facili\-/){
+		    print '';
+		}
 		while ($OriginalStr=~/\-\s*$/ && @lines){
 		    $DehyphenatedStr = $OriginalStr unless ($DehyphenatedStr);
 		    $DehyphenatedStr=~s/\-\s*$//;

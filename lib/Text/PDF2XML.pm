@@ -11,6 +11,35 @@ pdf2xml - extract text from PDF files and wraps it in XML
  pdf2xml [OPTIONS] pdf-file > output.xml
 
 For more information, see the man-pages of the command-line tool C<pdf2xml>.
+Using pdf2xml as a library is possible via the pdf2xml function:
+
+ use Text::PDF2XML
+
+ my $xml = pdf2xml( $pdf_file, %options );
+
+ pdf2xml( $pdf_file, output => \*STDOUT, %options );
+ pdf2xml( $pdf_file, output => 'file.xml', %options );
+
+ %options = (
+    conversion_tool         => 'pdfXtk',        # use pdfXtk (default = 'tika')
+    vocabulary              => 'filename',      # plain text file
+    vocabulary_from_pdf     => 0,               # skip pdftotext
+    vocabulary_from_raw_pdf => 0,               # skip pdftotext -raw
+    vocabulary_from_tika    => 1,               # read voc from Apache Tika
+    java                    => '/path/to/java', # java binary
+    java_heap               => '8g',            # default = 1g
+    split_into_characters   => 1,               # split into characters
+    detect_languages        => 1,               # enable language detection
+    keep_languages          => 'en',            # only keep English sentences
+    lowercase               => 0,               # switch off lower-casing
+    dehyphenate             => 0,               # switch off de-hyphenation
+    character_merging       => 0,               # skip char merging
+    paragraph_merging       => 0,               # skip paragraph merging
+    verbose                 => 1                # verbose output
+    );
+
+ pdf2xml( $pdf_file, output => 'file.xml', %options );
+
 
 =head1 DESCRIPTION
 
@@ -31,8 +60,6 @@ Here is an example with and without post-processing:
              la concentration d'autre part 16</p>
 
 =head1 TODO
-
-This is quite slow and loading Apache Tika for each conversion is not very efficient. Using the server mode of Apache Tika would be a solution.
 
 Character merging heuristics are very simple. Using the longest string forming a valid word from the vocabulary may lead to many incorrect words in context for some languages. Also, the implementation of the merging procedure is probably not the most efficient one.
 

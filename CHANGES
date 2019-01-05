@@ -1,10 +1,9 @@
 
-* v0.2.9
+* v0.3.0 Sat Jan  5 14:02:06 EET 2019
 
 - moved options and functions to library
-- enable output options
-- enabled calls to Apache Tika server
-
+- enable different output options
+- enabled calls to Apache Tika server if available
 
 * v0.2.8 Fri Aug 17 10:04:58 EEST 2018
 

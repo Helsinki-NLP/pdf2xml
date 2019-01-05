@@ -341,7 +341,7 @@ sub read_vocabulary{
 	chomp;
 	my @words = split(/\s+/);
 	foreach (@words){
-	    $_ = lc($_) unless ($LOWERCASE);
+	    $_ = lc($_) if ($LOWERCASE);
 	    $voc{$_}++;
 	}
     }
@@ -462,6 +462,7 @@ sub _xml_end{
 	}
 
 	my $text = join(' ',@words);
+	$text=~s/\s\s+/ /gs;
 	my $lang = undef;
 	if (@words && ($DETECT_LANG || $KEEP_LANG) ){
 	    $lang = Lingua::Identify::Blacklists::identify( lc( $text ));
@@ -630,7 +631,7 @@ sub _string2voc{
 	}
     }
     foreach (@words){
-	$_ = lc($_) unless ($LOWERCASE);
+	$_ = lc($_) if ($LOWERCASE);
 	$voc{$_}++;
     }
     return $hyphenated;
@@ -705,14 +706,14 @@ sub _find_longest_words{
 
 	# join all current tokens and see if they form a known word
 	my $str = join('',@{$current});
-	$str = lc($str) unless ($LOWERCASE);
+	$str = lc($str) if ($LOWERCASE);
 
 	# remove the final token until we have a known word
 	until (exists $voc{$str}){
 	    last unless (@{$current});
 	    unshift( @{$remaining}, pop(@{$current}) );
 	    $str = join('',@{$current});
-	    $str = lc($str) unless ($LOWERCASE);
+	    $str = lc($str) if ($LOWERCASE);
 	}
 
 	# more than one token? 
@@ -723,7 +724,7 @@ sub _find_longest_words{
 	}
 
 	# need to restore non-lowercased version if necessary
-	$str = join('',@{$current}) unless ($LOWERCASE);
+	$str = join('',@{$current}) if ($LOWERCASE);
 
 	# add the detected word to the list (or the next one)
 	if ($str){ push(@words,$str); }
@@ -757,7 +758,7 @@ sub _find_segments{
 	    last if ( $j > $#tokens );
 	    my @current = @tokens[$i+1..$j];
 	    my $str = join('',@current);
-	    $str = lc($str) unless ($LOWERCASE);
+	    $str = lc($str) if ($LOWERCASE);
 	    $str = &_try_dehyphenation($str);
 
 	    # stop if the length is longer than the longest known word
@@ -885,8 +886,8 @@ sub _find_words_pdfxtk{
 WORD:    while ($i<$#words){
 	my $this = $words[$i];
 	my $next = $words[$i+1];
-	$this = lc($this) unless ($LOWERCASE);
-	$next = lc($next) unless ($LOWERCASE);
+	$this = lc($this) if ($LOWERCASE);
+	$next = lc($next) if ($LOWERCASE);
 
 	# # dehyphenate if necessary
 	# if ($this=~/^(.+)-/){
@@ -937,7 +938,7 @@ WORD:    while ($i<$#words){
 	next if (length($clean[$i]) < 2);
 
 	my $this = $clean[$i];
-	$this = lc($this) unless ($LOWERCASE);
+	$this = lc($this) if ($LOWERCASE);
 
 	# if the current word does not exist in the vocabulary
 	# check if adding ligature strings helps
@@ -999,7 +1000,7 @@ sub _try_dehyphenation{
     if ($word=~/.\-./){
 	my $str = $word;
 	$str=~s/\-//g;
-	my $lc_str = $LOWERCASE ? $str : lcfirst($str);
+	my $lc_str = $LOWERCASE ? lcfirst($str) : $str ;
 	if (exists $voc{$lc_str}){
 	    $word=$str;
 	}

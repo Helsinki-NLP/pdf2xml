@@ -22,21 +22,21 @@ my $output = pdf2xml( $pdf_file,
 is( my_compare( $output, "$Bin/data/french.tika.xml" ),1, "pdf2xml (Apache Tika)" );
 
 ## this is only different if there is an Apache::Tika server running
-my $output = pdf2xml( $pdf_file,
+$output = pdf2xml( $pdf_file,
 		      # output => 'data/french.tika.xml',
 		      vocabulary_from_tika => 0,
 		      vocabulary_from_pdf => 0,
 		      vocabulary_from_raw_pdf => 0 );
 is( my_compare( $output, "$Bin/data/french.tika.xml" ),1, "pdf2xml (Apache Tika Server)" );
 
-my $output = pdf2xml( $pdf_file,
+$output = pdf2xml( $pdf_file,
 		      # output => 'data/franch.lm.xml',
 		      vocabulary_from_tika => 1,
 		      vocabulary_from_pdf => 0,
 		      vocabulary_from_raw_pdf => 0 );
 is( my_compare( $output, "$Bin/data/french.lm.xml" ),1, "pdf2xml (LM-based merge)" );
 
-my $output = pdf2xml( $pdf_file,
+$output = pdf2xml( $pdf_file,
 		      # output => 'data/french.voc.xml',
 		      vocabulary => "$Bin/word-list.txt",
 		      vocabulary_from_tika => 1,

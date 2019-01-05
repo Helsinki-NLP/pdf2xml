@@ -30,7 +30,7 @@ $output = pdf2xml( $pdf_file,
 is( my_compare( $output, "$Bin/data/french.tika.xml" ),1, "pdf2xml (Apache Tika Server)" );
 
 $output = pdf2xml( $pdf_file,
-		      # output => 'data/franch.lm.xml',
+		      # output => 'data/french.lm.xml',
 		      vocabulary_from_tika => 1,
 		      vocabulary_from_pdf => 0,
 		      vocabulary_from_raw_pdf => 0 );
@@ -68,8 +68,11 @@ sub my_compare{
     $output =~s/<meta name="resourceName"[^\n]*\n//s;
     $output =~s/<meta name="Content-Length"[^\n]*\n//s;
     $output =~s/\n[^\n]+\(U ο υ a vu Q[^\n]*\n/\n/s;
-    $reference =~s/\n[^\n]+\(U ο υ a vu Q[^\n]*\n/\n/s;
+
     $reference =~s/<meta name="created"[^\n]*\n//s;
+    $reference =~s/<meta name="resourceName"[^\n]*\n//s;
+    $reference =~s/<meta name="Content-Length"[^\n]*\n//s;
+    $reference =~s/\n[^\n]+\(U ο υ a vu Q[^\n]*\n/\n/s;
 
     return $output eq $reference;
 }

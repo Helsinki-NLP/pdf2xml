@@ -22,9 +22,10 @@
   <meta name="meta:author" content="Commission des Communautés européennes"></meta>
   <meta name="trapped" content="False"></meta>
   <meta name="meta:creation-date" content="2008-08-14T09:17:56Z"></meta>
-  <meta name="created" content="Thu Aug 14 09:17:56 UTC 2008"></meta>
+  <meta name="created" content="Thu Aug 14 12:17:56 EEST 2008"></meta>
   <meta name="access_permission:extract_for_accessibility" content="true"></meta>
   <meta name="Creation-Date" content="2008-08-14T09:17:56Z"></meta>
+  <meta name="resourceName" content="french.pdf"></meta>
   <meta name="pdfaid:part" content="1"></meta>
   <meta name="Author" content="Commission des Communautés européennes"></meta>
   <meta name="producer" content="Downgraded by EUDOR (PDFLibrary 8.1.0)"></meta>
@@ -42,6 +43,7 @@
   <meta name="pdf:docinfo:keywords" content="LG:fre"></meta>
   <meta name="pdf:docinfo:modified" content="2009-04-26T07:35:32Z"></meta>
   <meta name="meta:save-date" content="2009-04-26T07:35:32Z"></meta>
+  <meta name="Content-Length" content="4997987"></meta>
   <meta name="Content-Type" content="application/pdf"></meta>
   <meta name="X-Parsed-By" content="org.apache.tika.parser.DefaultParser"></meta>
   <meta name="X-Parsed-By" content="org.apache.tika.parser.pdf.PDFParser"></meta>

@@ -1,4 +1,13 @@
 
+* v0.3.2
+
+- reset vocabulary and language model for each call
+- set locale to utf8 before calling external programs
+
+* v0.3.1
+
+- fixed lowercase option
+
 * v0.3.0 Sat Jan  5 14:02:06 EET 2019
 
 - moved options and functions to library

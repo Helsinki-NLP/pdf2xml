@@ -16,29 +16,43 @@ my $pdf_file = "$Bin/french.pdf";
 
 my $output = pdf2xml( $pdf_file,
 		      # output => 'data/french.tika.xml',
+		      java_heap => '64m',
 		      use_tika_server => 0,
 		      vocabulary_from_tika => 0,
 		      vocabulary_from_pdf => 0,
 		      vocabulary_from_raw_pdf => 0 );
 is( my_compare( $output, "$Bin/data/french.tika.xml" ),1, "pdf2xml (Apache Tika)" );
 
-## this is only different if there is an Apache::Tika server running
-$output = pdf2xml( $pdf_file,
-		      # output => 'data/french.tika.xml',
-		      vocabulary_from_tika => 0,
-		      vocabulary_from_pdf => 0,
-		      vocabulary_from_raw_pdf => 0 );
-is( my_compare( $output, "$Bin/data/french.tika.xml" ),1, "pdf2xml (Apache Tika Server)" );
+# ## this is only different if there is an Apache::Tika server running
+# $output = pdf2xml( $pdf_file,
+# 		      # output => 'data/french.tika.xml',
+# 		      use_tika_server => 1,
+# 		      vocabulary_from_tika => 0,
+# 		      vocabulary_from_pdf => 0,
+# 		      vocabulary_from_raw_pdf => 0 );
+# is( my_compare( $output, "$Bin/data/french.tika.xml" ),1, "pdf2xml (Apache Tika Server)" );
 
 $output = pdf2xml( $pdf_file,
 		      # output => 'data/french.lm.xml',
+		      java_heap => '64m',
+		      use_tika_server => 0,
 		      vocabulary_from_tika => 1,
 		      vocabulary_from_pdf => 0,
 		      vocabulary_from_raw_pdf => 0 );
 is( my_compare( $output, "$Bin/data/french.lm.xml" ),1, "pdf2xml (LM-based merge)" );
 
+# $output = pdf2xml( $pdf_file,
+# 		      # output => 'data/french.lm.xml',
+# 		      use_tika_server => 1,
+# 		      vocabulary_from_tika => 1,
+# 		      vocabulary_from_pdf => 0,
+# 		      vocabulary_from_raw_pdf => 0 );
+# is( my_compare( $output, "$Bin/data/french.lm.xml" ),1, "pdf2xml (LM-based merge, Server)" );
+
 $output = pdf2xml( $pdf_file,
 		      # output => 'data/french.voc.xml',
+		      java_heap => '64m',
+		      use_tika_server => 0,
 		      vocabulary => "$Bin/word-list.txt",
 		      vocabulary_from_tika => 1,
 		      vocabulary_from_pdf => 0,

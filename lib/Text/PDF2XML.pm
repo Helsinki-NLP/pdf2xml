@@ -91,6 +91,7 @@ package Text::PDF2XML;
 
 use strict;
 
+use Encode::Locale;
 use Encode qw/decode_utf8/;
 use File::Temp qw /tempfile/;
 use FindBin qw/$Bin/;
@@ -272,11 +273,11 @@ sub pdf2xml{
 	$output = \$result;
     }
 
-    binmode(STDOUT,":encoding(UTF-8)");
-    binmode(STDERR,":encoding(UTF-8)");
+    binmode(STDOUT,":encoding(locale)");
+    binmode(STDERR,":encoding(locale)");
 
     # binmode(STDOUT,":encoding(UTF-8)");
-    # $XMLWRITER = XML::Writer->new( OUTPUT => \*STDOUT, 
+    # binmode(STDERR,":encoding(UTF-8)");
 
     $XMLWRITER = XML::Writer->new( OUTPUT => $output,
 				   DATA_MODE => 1,
@@ -297,6 +298,7 @@ sub pdf2xml{
 	my $out_file = &_run_pdfxtk($pdf_file);
 	open OUT,"<$out_file" || die "cannot read from pdfxtkoutput ($out_file)\n";
 	binmode(OUT,":encoding(UTF-8)");
+	# binmode(OUT,":encoding(locale)");
 	$SPLIT_CHAR_IF_NECESSARY = 1;
 	my $handler = $parser->parse_start;
 	while (<OUT>){
@@ -313,6 +315,7 @@ sub pdf2xml{
 	    $parser->parse($ParsedContent);
 	}
 	else {
+	    local $ENV{LC_ALL} = 'en_US.UTF-8';
 	    my $pid = open3(undef, \*OUT, \*ERR, $JAVA,'-Xmx'.$JAVA_HEAP_SIZE,
 			    '-jar',$TIKAJAR,'-x',$pdf_file);
 	    $parser->parse(*OUT);
@@ -418,6 +421,7 @@ sub _run_pdfxtk{
     ## ---------------------------
 
     # print STDERR "$JAVA16 -Xmx $JAVA_HEAP_SIZE -cp $CLASSPATH at.ac.tuwien.dbai.pdfwrap.ProcessFile $pdf_file $out_file\n";
+    local $ENV{LC_ALL} = 'en_US.UTF-8';
     my $pid = open3(undef, undef, undef, 
 		    $JAVA16,
 		    '-Xmx'.$JAVA_HEAP_SIZE,
@@ -569,6 +573,7 @@ sub _xml_end_simple{
 sub _vocab_from_pdftotext_raw{
     my $pdf_file = shift;
 
+    local $ENV{LC_ALL} = 'en_US.UTF-8';
     my $pid = open3(undef, \*OUT, \*ERR, $PDF2TEXT,'-raw','-enc','UTF-8',$pdf_file,'-');
 
     binmode(OUT,":encoding(UTF-8)");
@@ -587,6 +592,7 @@ sub _vocab_from_pdftotext{
     my $pdf_file = shift;
 
     return &_vocab_from_tika($pdf_file) unless ( -e $PDF2TEXT );
+    local $ENV{LC_ALL} = 'en_US.UTF-8';
     my $pid = open3(undef, \*OUT, \*ERR, 'pdftotext','-enc','UTF-8',$pdf_file,'-');
 
     binmode(OUT,":encoding(UTF-8)");
@@ -615,6 +621,7 @@ sub _vocab_from_tika{
 	return 1;
     }
 
+    local $ENV{LC_ALL} = 'en_US.UTF-8';
     my $pid = open3(undef, \*OUT, \*ERR, $JAVA,'-Xmx'.$JAVA_HEAP_SIZE,
 		    '-jar',$TIKAJAR,'-t',$pdf_file);
 

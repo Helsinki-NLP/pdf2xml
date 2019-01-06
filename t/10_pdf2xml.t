@@ -62,18 +62,13 @@ sub my_compare{
     ## ignore extra white spaces 
     $output =~s/(\n|A)\s*/$1/sg;
     $output =~s/\s*(\n|\Z)/$1/sg;
+    $output =~s/<head>.*<\/head>//s;
+    # $output =~s/\n[^\n]+\(U ο υ a vu Q[^\n]*\n/\n/s;
+
     $reference =~s/(\n|A)\s*/$1/sg;
     $reference =~s/\s*(\n|\Z)/$1/sg;
-
-    $output =~s/<meta name="created"[^\n]*\n//s;
-    $output =~s/<meta name="resourceName"[^\n]*\n//s;
-    $output =~s/<meta name="Content-Length"[^\n]*\n//s;
-    $output =~s/\n[^\n]+\(U ο υ a vu Q[^\n]*\n/\n/s;
-
-    $reference =~s/<meta name="created"[^\n]*\n//s;
-    $reference =~s/<meta name="resourceName"[^\n]*\n//s;
-    $reference =~s/<meta name="Content-Length"[^\n]*\n//s;
-    $reference =~s/\n[^\n]+\(U ο υ a vu Q[^\n]*\n/\n/s;
+    $reference =~s/<head>.*<\/head>//s;
+    # $reference =~s/\n[^\n]+\(U ο υ a vu Q[^\n]*\n/\n/s;
 
     return $output eq $reference;
 }

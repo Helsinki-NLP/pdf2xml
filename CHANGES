@@ -1,8 +1,4 @@
 
-* v0.3.1
-
-- fixed lower-case option
-
 * v0.3.0 Sat Jan  5 14:02:06 EET 2019
 
 - moved options and functions to library

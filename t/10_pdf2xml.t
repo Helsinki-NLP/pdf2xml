@@ -10,6 +10,7 @@ use File::Compare;
 
 use Text::PDF2XML;
 
+############
 
 my $pdf_file = "$Bin/french.pdf";
 

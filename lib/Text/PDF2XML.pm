@@ -22,6 +22,7 @@ Using pdf2xml as a library is possible via the pdf2xml function:
 
  %options = (
     conversion_tool         => 'pdfXtk',        # use pdfXtk (default = 'tika')
+    keep_vocabulary         => 1,               # don't reset the vocabulary
     vocabulary              => 'filename',      # plain text file
     vocabulary_from_pdf     => 0,               # skip pdftotext
     vocabulary_from_raw_pdf => 0,               # skip pdftotext -raw
@@ -39,6 +40,8 @@ Using pdf2xml as a library is possible via the pdf2xml function:
     );
 
  pdf2xml( $pdf_file, output => 'file.xml', %options );
+
+Note that the options stay for the next pdf2xml call! You need to overwrite them if you want to change the behaviour in subsquent calls while the libraray is loaded!
 
 
 =head1 DESCRIPTION
@@ -102,17 +105,13 @@ use Exporter 'import';
 our @EXPORT = qw(pdf2xml);
 our %EXPORT_TAGS = ( all => \@EXPORT );
 
-
-
-
-our $TIKA_URL        = 'http://localhost:9998';
-our $USE_TIKA_SERVER = 1;
-
-
-my $SHARED_HOME;
 eval{ 
     require Lingua::Identify::Blacklists;
-    require File::ShareDir; 
+};
+
+my $SHARED_HOME = undef;
+eval{ 
+    require File::ShareDir;
     $SHARED_HOME = File::ShareDir::dist_dir('Text-PDF2XML'); 
 };
 
@@ -124,11 +123,40 @@ unless (-e $SHARED_HOME.'/lib/tika-app-1.18.jar'){
     }
 }
 
-## Apache Tika Server
+
+# global parameters
+
+our $TIKA_URL        = 'http://localhost:9998';
+our $USE_TIKA_SERVER = 1;
+our $CONVERTER       = 'tika';
+
+our $JAVA            = 'java';
+our $JAVA_HEAP_SIZE  = '1g';
+our $TIKAJAR         = $SHARED_HOME.'/lib/tika-app-1.18.jar';
+our $PDF2TEXT        = `which pdftotext`;chomp($PDF2TEXT);
+
+our $LOWERCASE       = 1;
+our $SPLIT_CHAR      = 0;
+our $CHAR_MERGING    = 1;
+our $PAR_MERGING     = 1;
+our $DEHYPHENATE     = 1;
+our $DETECT_LANG     = 0;
+our $KEEP_LANG       = undef;
+
+our $KEEP_VOCABULARY = 0;
+our $VOCAB_FROM_PDF  = 0;
+our $VOCAB_FROM_RAW  = 1;
+our $VOCAB_FROM_TIKA = 0;
+
+our $VERBOSE         = 0;
+
+
+
+## check availability of the Apache Tika Server
 my $_UserAgent;
 if ($USE_TIKA_SERVER){
     $_UserAgent    = LWP::UserAgent->new();
-    my $_request   = HTTP::Request->new('HEAD' => 'http://localhost:9998');
+    my $_request   = HTTP::Request->new('HEAD' => $TIKA_URL);
     my $_response  = $_UserAgent->request($_request);
     if ($_response->is_error) {
 	# print "Apache Tika Server is not available!\n";
@@ -136,37 +164,21 @@ if ($USE_TIKA_SERVER){
     }
 }
 
-our $CONVERTER      = 'tika';
 
-our $JAVA           = 'java';
-our $JAVA_HEAP_SIZE = '1g';
-our $TIKAJAR        = $SHARED_HOME.'/lib/tika-app-1.18.jar';
-our $PDF2TEXT       = `which pdftotext`;chomp($PDF2TEXT);
-
-our $LOWERCASE      = 1;
-our $CHAR_MERGING   = 1;
-our $PAR_MERGING    = 1;
-our $DEHYPHENATE    = 1;
-our $DETECT_LANG    = 0;
-our $KEEP_LANG      = undef;
-
-our $VOCAB_FROM_PDF  = 0;
-our $VOCAB_FROM_RAW  = 1;
-our $VOCAB_FROM_TIKA = 0;
-
-our $VERBOSE        = 0;
-
-# some global variables used for finding words in strings
-# LONGEST_WORD = length of the longest word in the vocabulary
+## a special variable for pdfXtk:
+#
 # SPLIT_CHAR_IF_NECESSARY = split strings into character sequences
 #                           (if they do not contain any single whitespace)
-#                           (this is only used with pdfxtk output)
-# SPLIT_CHAR = always split strings into character sequence before finding words
 
-
-our $LONGEST_WORD            = undef;
 our $SPLIT_CHAR_IF_NECESSARY = 0;
-our $SPLIT_CHAR              = 0;
+
+
+## voacabulary and unigram LM
+# LONGEST_WORD = length of the longest word in the vocabulary
+
+our %voc          = ();
+our %lm           = ();
+our $LONGEST_WORD = undef;
 
 
 # we require recent versions of pdftotext developed by 
@@ -189,7 +201,7 @@ my %LIGATURES = (
 my $LIGATURES_MATCH = join('|',sort {length($b) <=> length($a)} 
 			   keys %LIGATURES);
 
-
+# XML writer handle
 my $XMLWRITER = undef;
 
 #-------------------------------------------------------
@@ -202,10 +214,13 @@ sub pdf2xml{
     my $pdf_file = shift;
     my %options = @_;
 
+    die "no input file '$pdf_file' found" unless (-e $pdf_file);
+
     $CONVERTER       = $options{conversion_tool} if ($options{conversion_tool});
     $USE_TIKA_SERVER = $options{use_tika_server} if (defined $options{use_tika_server});
     $TIKA_URL        = $options{tika_url} if ($options{tika_url});
 
+    $KEEP_VOCABULARY = $options{keep_vocabulary} if ($options{keep_vocabulary});
     $VOCAB_FROM_PDF  = $options{vocabulary_from_pdf} if (defined $options{vocabulary_from_pdf});
     $VOCAB_FROM_RAW  = $options{vocabulary_from_raw_pdf} if (defined $options{vocabulary_from_raw_pdf});
     $VOCAB_FROM_TIKA = $options{vocabulary_from_tika} if (defined $options{vocabulary_from_tika});
@@ -223,6 +238,12 @@ sub pdf2xml{
 
     $VERBOSE         = $options{verbose} if ($options{verbose});
 
+    ## reset vocabulary
+    unless ($KEEP_VOCABULARY){
+	%voc = ();
+	%lm = ();
+	$LONGEST_WORD = undef;
+    }
 
     if ($options{vocabulary}){
 	&read_vocabulary($options{vocabulary});
@@ -308,11 +329,6 @@ sub pdf2xml{
 
 
 
-
-## voacabulary and unigram LM
-
-our %voc = ();
-our %lm  = ();
 
 
 sub read_vocabulary{
@@ -440,9 +456,6 @@ sub _xml_end{
 	    my $DehyphenatedStr = undef;
 
 	    if ($DEHYPHENATE){
-		if ($OriginalStr=~/facili\-/){
-		    print '';
-		}
 		while ($OriginalStr=~/\-\s*$/ && @lines){
 		    $DehyphenatedStr = $OriginalStr unless ($DehyphenatedStr);
 		    $DehyphenatedStr=~s/\-\s*$//;

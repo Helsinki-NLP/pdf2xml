@@ -36,6 +36,7 @@ Using pdf2xml as a library is possible via the pdf2xml function:
     dehyphenate             => 0,               # switch off de-hyphenation
     character_merging       => 0,               # skip char merging
     paragraph_merging       => 0,               # skip paragraph merging
+    request_timeout         => 180,             # server request timeout (Tika)
     verbose                 => 1                # verbose output
     );
 
@@ -129,6 +130,7 @@ unless (-e $SHARED_HOME.'/lib/tika-app-1.18.jar'){
 
 our $TIKA_URL        = 'http://localhost:9998';
 our $USE_TIKA_SERVER = 1;
+our $REQUEST_TIMEOUT = 180;
 our $CONVERTER       = 'tika';
 
 our $JAVA            = 'java';
@@ -156,7 +158,7 @@ our $VERBOSE         = 0;
 ## check availability of the Apache Tika Server
 my $_UserAgent;
 if ($USE_TIKA_SERVER){
-    $_UserAgent    = LWP::UserAgent->new();
+    $_UserAgent    = LWP::UserAgent->new( timeout => $REQUEST_TIMEOUT );
     my $_request   = HTTP::Request->new('HEAD' => $TIKA_URL);
     my $_response  = $_UserAgent->request($_request);
     if ($_response->is_error) {
@@ -239,6 +241,10 @@ sub pdf2xml{
 
     $VERBOSE         = $options{verbose} if ($options{verbose});
 
+    ## set request timeout if necessary
+    $_UserAgent->timeout($options{request_timeout}) if ($options{request_timeout});
+
+
     ## reset vocabulary
     unless ($KEEP_VOCABULARY){
 	%voc = ();
@@ -307,11 +313,14 @@ sub pdf2xml{
 	close OUT;
     }
     else{
+	my $ParsedContent = undef;
 	if ($USE_TIKA_SERVER){
 	    my $RawContent = _read_raw_file($pdf_file);
-	    my $ParsedContent = _request( 'put', $TIKA_URL, 'tika', 
-					  { 'Accept' => 'text/xml' }, 
-					  $RawContent );
+	    $ParsedContent = _request( 'put', $TIKA_URL, 'tika', 
+				       { 'Accept' => 'text/xml' }, 
+				       $RawContent );
+	}
+	if ($ParsedContent){
 	    $parser->parse($ParsedContent);
 	}
 	else {
@@ -613,12 +622,14 @@ sub _vocab_from_tika{
         my $ParsedContent = _request( 'put', $TIKA_URL, 'tika', 
 				      { 'Accept' => 'text/plain' }, 
 				      $RawContent );
-	my @lines = split(/\n/,$ParsedContent);
-	my $hyphenated = undef;
-	foreach (@lines){
-	    $hyphenated = _string2voc($_,$hyphenated);
+	if ($ParsedContent){
+	    my @lines = split(/\n/,$ParsedContent);
+	    my $hyphenated = undef;
+	    foreach (@lines){
+		$hyphenated = _string2voc($_,$hyphenated);
+	    }
+	    return 1;
 	}
-	return 1;
     }
 
     local $ENV{LC_ALL} = 'en_US.UTF-8';
@@ -679,7 +690,11 @@ sub _request {
 	%$headers,
 	Content => $bodyBytes
         );
-    return decode_utf8($response->decoded_content(charset => 'none'));
+    if ($response->is_success) {
+	return decode_utf8($response->decoded_content(charset => 'none'));
+    }
+    print STDERR $response->status_line, "\n";
+    return undef;
 }
 
 

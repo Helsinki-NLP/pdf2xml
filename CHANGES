@@ -1,7 +1,7 @@
 * v0.3.3
 
 - added timeout parameter for requests to the ApacheTika server
-- fallback to local java app if the ApacheTika server request fails
+- fallback to local java app if the ApacheTika server request fails or is incomplete
 
 * v0.3.2
 

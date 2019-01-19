@@ -320,8 +320,10 @@ sub pdf2xml{
 				       { 'Accept' => 'text/xml' }, 
 				       $RawContent );
 	}
-	if ($ParsedContent){
-	    $parser->parse($ParsedContent);
+	## only parse if there is content and it ends with '</html>'
+	if ($ParsedContent && $ParsedContent=~/<\/html>\s$/s){
+	    eval { $parser->parse($ParsedContent); };
+	    warn $@ if $@;
 	}
 	else {
 	    local $ENV{LC_ALL} = 'en_US.UTF-8';

@@ -290,27 +290,30 @@ sub pdf2xml{
 				   DATA_INDENT => 1 );
     $XMLWRITER->xmlDecl("UTF-8");
 
-
-    my $parser = new XML::Parser( Handlers => { 
-	# Default => sub{ print $_[1] },
-	Char    => sub{ $_[0]->{STRING} .= $_[1] },
-	Start   => \&_xml_start,
-	End     => \&_xml_end } );
-
+    ## NEW: create parser in eval block to catch failures 
+    ##
+    # my $parser = new XML::Parser( Handlers => { 
+    # 	Char    => sub{ $_[0]->{STRING} .= $_[1] },
+    # 	Start   => \&_xml_start,
+    # 	End     => \&_xml_end } );
 
     # use pdfxtk or Apache Tika (default)
 
     if ($CONVERTER=~/pdfxtk/i){
-	my $out_file = &_run_pdfxtk($pdf_file);
-	open OUT,"<$out_file" || die "cannot read from pdfxtkoutput ($out_file)\n";
-	binmode(OUT,":encoding(UTF-8)");
-	# binmode(OUT,":encoding(locale)");
-	$SPLIT_CHAR_IF_NECESSARY = 1;
-	my $handler = $parser->parse_start;
-	while (<OUT>){
-	    $handler->parse_more($_);
-	}
-	close OUT;
+	eval {
+	    my $out_file = &_run_pdfxtk($pdf_file);
+	    open OUT,"<$out_file" || die "cannot read from pdfxtkoutput ($out_file)\n";
+	    binmode(OUT,":encoding(UTF-8)");
+	    # binmode(OUT,":encoding(locale)");
+	    $SPLIT_CHAR_IF_NECESSARY = 1;
+	    my $parser = &new_xml_parser();
+	    my $handler = $parser->parse_start;
+	    while (<OUT>){
+		$handler->parse_more($_);
+	    }
+	    close OUT;
+	};
+	warn $@ && return undef if $@;
     }
     else{
 	my $ParsedContent = undef;
@@ -322,19 +325,28 @@ sub pdf2xml{
 	}
 	## only parse if there is content and it ends with '</html>'
 	if ($ParsedContent && $ParsedContent=~/<\/html>\s$/s){
-	    eval { $parser->parse($ParsedContent); };
-	    warn $@ if $@;
+	    eval {
+		my $parser = &new_xml_parser();
+		$parser->parse($ParsedContent);
+	    };
+	    warn $@ && return undef if $@;
 	}
 	else {
-	    local $ENV{LC_ALL} = 'en_US.UTF-8';
-	    my $pid = open3(undef, \*OUT, \*ERR, $JAVA,'-Xmx'.$JAVA_HEAP_SIZE,
-			    '-jar',$TIKAJAR,'-x',$pdf_file);
-	    $parser->parse(*OUT);
-	    # close(OUT);
-	    # waitpid( $pid, 0 );
+	    eval {
+		local $ENV{LC_ALL} = 'en_US.UTF-8';
+		my $pid = open3(undef, \*OUT, \*ERR, $JAVA,'-Xmx'.$JAVA_HEAP_SIZE,
+				'-jar',$TIKAJAR,'-x',$pdf_file);
+		my $parser = &new_xml_parser();
+		$parser->parse(*OUT);
+		# close(OUT);
+		# waitpid( $pid, 0 );
+	    };
+	    warn $@ && return undef if $@;
 	}
     }
-    return $result;
+
+    ## success! return $result or 1
+    return $result ? $result : 1;
 }
 
 
@@ -342,7 +354,12 @@ sub pdf2xml{
 ##########################
 
 
-
+sub new_xml_parser{
+    return new XML::Parser( Handlers => { 
+	Char    => sub{ $_[0]->{STRING} .= $_[1] },
+	Start   => \&_xml_start,
+	End     => \&_xml_end } );
+}
 
 
 sub read_vocabulary{

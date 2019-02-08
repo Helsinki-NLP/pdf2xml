@@ -96,11 +96,13 @@ use Encode::Locale;
 use Encode qw/decode_utf8/;
 use File::Temp qw /tempfile/;
 use FindBin qw/$Bin/;
+use Lingua::Identify::CLD;
 use IO::File;
 use IPC::Open3;
 use LWP::UserAgent;
 use XML::Parser;
 use XML::Writer;
+
 
 
 use Exporter 'import';
@@ -136,7 +138,7 @@ our $CONVERTER       = 'tika';
 our $JAVA            = 'java';
 our $JAVA_HEAP_SIZE  = '1g';
 our $TIKAJAR         = $SHARED_HOME.'/lib/tika-app-1.18.jar';
-our $PDF2TEXT        = `which pdftotext`;chomp($PDF2TEXT);
+our $PDF2TEXT        = undef;
 
 our $LOWERCASE       = 1;
 our $SPLIT_CHAR      = 0;
@@ -153,6 +155,9 @@ our $VOCAB_FROM_TIKA = 0;
 
 our $VERBOSE         = 0;
 
+
+## the compact language identifier from Google Chrome
+my $CLD = new Lingua::Identify::CLD;
 
 
 ## check availability of the Apache Tika Server
@@ -183,13 +188,6 @@ our %voc          = ();
 our %lm           = ();
 our $LONGEST_WORD = undef;
 
-
-# we require recent versions of pdftotext developed by 
-# The Poppler Developers - http://poppler.freedesktop.org
-if (-e $PDF2TEXT){
-    my $developer = `$PDF2TEXT --help 2>&1 | grep -i 'poppler'`;
-    $PDF2TEXT    = undef unless ($developer=~/poppler/i);
-}
 
 my %LIGATURES = (
     "\x{0132}" => 'IJ',
@@ -244,6 +242,8 @@ sub pdf2xml{
     ## set request timeout if necessary
     $_UserAgent->timeout($options{request_timeout}) if ($options{request_timeout});
 
+    ## set path to pdftotext
+    &_initialize_pdf2text();
 
     ## reset vocabulary
     unless ($KEEP_VOCABULARY){
@@ -408,6 +408,20 @@ sub make_lm{
 
 
 
+sub _initialize_pdf2text{
+    unless ($PDF2TEXT){
+	$PDF2TEXT = `which pdftotext`;chomp($PDF2TEXT);
+    }
+
+    # we require recent versions of pdftotext developed by 
+    # The Poppler Developers - http://poppler.freedesktop.org
+    if (-e $PDF2TEXT){
+	my $developer = `$PDF2TEXT --help 2>&1 | grep -i 'poppler'`;
+	$PDF2TEXT    = undef unless ($developer=~/poppler/i);
+    }
+}
+
+
 # convert pdf's using pdfxtk
 
 sub _run_pdfxtk{
@@ -513,7 +527,10 @@ sub _xml_end{
 	$text=~s/\s\s+/ /gs;
 	my $lang = undef;
 	if (@words && ($DETECT_LANG || $KEEP_LANG) ){
-	    $lang = Lingua::Identify::Blacklists::identify( lc( $text ));
+	    ## NEW: remove blacklist classifier and use plain CLD instead
+	    # $lang = Lingua::Identify::Blacklists::identify( lc( $text ));
+	    my @detected = $CLD->identify( lc( $text ) );
+	    $lang = $detected[1];
 	    # print STDERR "language detected: ",$lang,"\n";
 	    if ($KEEP_LANG && ($lang ne $KEEP_LANG)){
 		$_[0]->{STRING} = '';
